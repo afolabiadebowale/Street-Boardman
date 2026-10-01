@@ -1,0 +1,6 @@
+# Files executed inside Linux containers must keep LF endings even when
+# checked out on Windows — a CRLF shebang or `\gexec\r` breaks them.
+*.sh  text eol=lf
+*.sql text eol=lf
+Dockerfile text eol=lf
+*.template text eol=lf

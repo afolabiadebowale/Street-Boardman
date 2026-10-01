@@ -20,7 +20,7 @@ function loadWithdrawalServiceWithAppMode(appMode) {
 describe('withdrawalService.transferFunds stopgap (TASK-003)', () => {
   it('refuses to process a withdrawal in PRODUCTION mode (no real transfer wired up yet)', async () => {
     const user = await prisma.user.create({
-      data: { role: 'BETTER', fullName: 'Prod Better', phone: '08060000001', passwordHash: 'x' },
+      data: { role: 'BETTER', fullName: 'Prod Better', phone: '08060000001', passwordHash: 'x', kycTier: 'TIER_1' },
     });
     await prisma.wallet.create({ data: { userId: user.id, walletType: 'BETTER', balance: 5000 } });
     const admin = await prisma.user.create({
@@ -45,7 +45,7 @@ describe('withdrawalService.transferFunds stopgap (TASK-003)', () => {
 
   it('still processes normally in DEMO mode', async () => {
     const user = await prisma.user.create({
-      data: { role: 'BETTER', fullName: 'Demo Better', phone: '08060000003', passwordHash: 'x' },
+      data: { role: 'BETTER', fullName: 'Demo Better', phone: '08060000003', passwordHash: 'x', kycTier: 'TIER_1' },
     });
     await prisma.wallet.create({ data: { userId: user.id, walletType: 'BETTER', balance: 5000 } });
     const admin = await prisma.user.create({

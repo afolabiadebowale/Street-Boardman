@@ -1,0 +1,133 @@
+name: Deploy
+
+# dev: automatically, after CI passes on main.
+# staging / prod: manually (Actions -> Deploy -> Run workflow). Give the
+# "prod" GitHub Environment required reviewers so a second person approves.
+#
+# Order matters (TASK-040): images -> task definitions -> migrations (stop
+# here if they fail) -> roll out services. Old tasks keep serving until new
+# ones pass health checks; ECS rolls back by itself if they never do.
+# Migrations must therefore be backward-compatible with the code still
+# running (expand/contract) — see docs/DEPLOYMENT.md.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Where to deploy
+        type: choice
+        options: [dev, staging, prod]
+        default: staging
+
+permissions:
+  contents: read
+  id-token: write # OIDC: short-lived AWS credentials, no stored keys
+
+concurrency:
+  group: deploy-${{ github.event.inputs.environment || 'dev' }}
+  cancel-in-progress: false # never interrupt a deploy mid-migration
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    env:
+      # Set per GitHub Environment from `terraform output github_environment_variables`.
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+      NAME_PREFIX: ${{ vars.NAME_PREFIX }}
+      ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+      IMAGE_TAG: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push images
+        env:
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+        run: |
+          set -euo pipefail
+          for target in api worker migrate; do
+            docker build --target "$target" -t "$ECR_REGISTRY/$NAME_PREFIX/$target:$IMAGE_TAG" .
+            docker push "$ECR_REGISTRY/$NAME_PREFIX/$target:$IMAGE_TAG"
+          done
+          docker build \
+            --build-arg VITE_SENTRY_DSN="$VITE_SENTRY_DSN" \
+            --build-arg VITE_SENTRY_RELEASE="$IMAGE_TAG" \
+            -t "$ECR_REGISTRY/$NAME_PREFIX/web:$IMAGE_TAG" ./client
+          docker push "$ECR_REGISTRY/$NAME_PREFIX/web:$IMAGE_TAG"
+
+      # Copies each current task definition, swaps in the new image (and
+      # tags errors with this release), registers it as a new revision.
+      - name: Register task definitions
+        run: |
+          set -euo pipefail
+          for svc in api worker migrate web; do
+            aws ecs describe-task-definition --task-definition "$NAME_PREFIX-$svc" --query taskDefinition > current.json
+            jq --arg image "$ECR_REGISTRY/$NAME_PREFIX/$svc:$IMAGE_TAG" --arg release "$IMAGE_TAG" '
+              .containerDefinitions[0].image = $image
+              | .containerDefinitions[0].environment = (
+                  [(.containerDefinitions[0].environment // [])[] | select(.name != "SENTRY_RELEASE")]
+                  + [{name: "SENTRY_RELEASE", value: $release}])
+              | {family, taskRoleArn, executionRoleArn, networkMode, containerDefinitions,
+                 requiresCompatibilities, cpu, memory, runtimePlatform}
+            ' current.json > next.json
+            arn=$(aws ecs register-task-definition --cli-input-json file://next.json --query taskDefinition.taskDefinitionArn --output text)
+            echo "${svc^^}_TASK_DEF=$arn" >> "$GITHUB_ENV"
+            echo "$svc -> $arn"
+          done
+
+      - name: Run database migrations
+        env:
+          SUBNETS: ${{ vars.ECS_SUBNETS }}
+          SECURITY_GROUP: ${{ vars.ECS_SECURITY_GROUP }}
+          ASSIGN_PUBLIC_IP: ${{ vars.ECS_ASSIGN_PUBLIC_IP }}
+        run: |
+          set -euo pipefail
+          task=$(aws ecs run-task \
+            --cluster "$ECS_CLUSTER" \
+            --task-definition "$MIGRATE_TASK_DEF" \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SECURITY_GROUP],assignPublicIp=$ASSIGN_PUBLIC_IP}" \
+            --query 'tasks[0].taskArn' --output text)
+          echo "Migration task: $task"
+          aws ecs wait tasks-stopped --cluster "$ECS_CLUSTER" --tasks "$task"
+
+          # Show the migration output in this log either way.
+          task_id="${task##*/}"
+          aws logs get-log-events \
+            --log-group-name "/$NAME_PREFIX/migrate" \
+            --log-stream-name "migrate/migrate/$task_id" \
+            --query 'events[].message' --output text || true
+
+          exit_code=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$task" \
+            --query 'tasks[0].containers[0].exitCode' --output text)
+          if [ "$exit_code" != "0" ]; then
+            reason=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$task" --query 'tasks[0].stoppedReason' --output text)
+            echo "::error::Migrations failed (exit code: $exit_code, $reason). Nothing was rolled out."
+            exit 1
+          fi
+
+      - name: Roll out services
+        run: |
+          set -euo pipefail
+          aws ecs update-service --cluster "$ECS_CLUSTER" --service api --task-definition "$API_TASK_DEF" > /dev/null
+          aws ecs update-service --cluster "$ECS_CLUSTER" --service worker --task-definition "$WORKER_TASK_DEF" > /dev/null
+          aws ecs update-service --cluster "$ECS_CLUSTER" --service web --task-definition "$WEB_TASK_DEF" > /dev/null
+          aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services api worker web
+          echo "Deployed $IMAGE_TAG to ${{ github.event.inputs.environment || 'dev' }}"

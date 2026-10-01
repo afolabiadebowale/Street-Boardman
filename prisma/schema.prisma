@@ -108,17 +108,59 @@ enum DisputeStatus {
 }
 
 model User {
-  id           String     @id @default(cuid())
-  role         Role
-  fullName     String
-  phone        String     @unique
-  email        String?
-  passwordHash String
-  pinHash      String?
-  status       UserStatus @default(ACTIVE)
-  isDemo       Boolean    @default(true)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id             String     @id @default(cuid())
+  role           Role
+  fullName       String
+  phone          String     @unique
+  email          String?
+  passwordHash   String
+  pinHash        String?
+  status         UserStatus @default(ACTIVE)
+  isDemo         Boolean    @default(true)
+  // Set once an OTP verification succeeds for this phone (TASK-025). Not
+  // yet enforced as a hard gate on registration/login — see otpService.js
+  // and the scope note on that task.
+  phoneVerifiedAt DateTime?
+  // TIER_0 (default): phone only. TIER_1: BVN/NIN matched (TASK-026),
+  // required before normal withdrawal limits apply (TASK-027).
+  kycTier        KycTier    @default(TIER_0)
+  // A hash of (IP + User-Agent) captured at registration (TASK-029) — a
+  // weak signal (shared wifi, phone reinstalls, browser updates all
+  // change it), used only to flag, never to block. See deviceService.js.
+  deviceFingerprint String?
+  // Only meaningful for role=ADMIN users (TASK-030). null means "no staff
+  // permissions granted" — including for an ADMIN account, deliberately:
+  // being able to log in and being able to act are different questions.
+  staffRole      StaffRole?
+  // TOTP secret (TASK-031). Set but mfaEnabledAt still null = enrollment
+  // in progress (generated, not yet confirmed with a valid code). Once
+  // mfaEnabledAt is set, login for this account always requires a code —
+  // no bypass path exists.
+  mfaSecret      String?
+  mfaEnabledAt   DateTime?
+  // Highest TOTP time step ever accepted for this account. A code is only
+  // accepted if its step is strictly greater, so each code works once —
+  // a phished or shoulder-surfed code can't be replayed inside its 30s
+  // window (ASVS 2.8.4).
+  mfaLastTimeStep Int?
+  // Per-account brute-force protection (ASVS 2.2.1). The per-IP rate limit
+  // alone can't stop an attacker rotating IPs against one account, and a
+  // 4-digit PIN is only 10,000 guesses. Wrong PIN or MFA code increments
+  // the count; reaching the limit locks the account for a while.
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
+  // Stamped into every access/refresh token. Bumping it (logout, MFA
+  // change) invalidates every token already issued for this account —
+  // stateless JWTs otherwise stay valid until they expire (ASVS 3.3.1).
+  tokenVersion     Int       @default(0)
+  // Staff passwords must be 12+ characters (ASVS 2.1.1). Only the hash is
+  // stored, so length can only be checked when the plaintext is in hand —
+  // at login. A short staff password sets this, and the admin gate blocks
+  // admin actions until it's changed.
+  mustChangePassword Boolean   @default(false)
+  passwordChangedAt  DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 
   boardmanProfile BoardmanProfile?
   wallet          Wallet?
@@ -128,8 +170,10 @@ model User {
   disputesRaised  Dispute[]         @relation("DisputeRaisedBy")
   auditLogs       AuditLog[]
   commissionsEarned Commission[]
+  kycVerifications KycVerification[]
 
   @@index([role])
+  @@index([deviceFingerprint])
 }
 
 model BoardmanProfile {
@@ -159,7 +203,8 @@ model Wallet {
   isDemo     Boolean    @default(true)
   createdAt  DateTime   @default(now())
 
-  transactions WalletTransaction[]
+  transactions  WalletTransaction[]
+  ledgerAccount LedgerAccount?
 }
 
 model WalletTransaction {
@@ -176,6 +221,66 @@ model WalletTransaction {
   createdAt      DateTime              @default(now())
 
   @@index([walletId])
+  @@index([referenceType, referenceId])
+}
+
+// --- Double-entry ledger (TASK-016) ---
+//
+// This is the ground truth the rest of the money system is being migrated
+// onto (TASK-017/018 rewrite the wallet write/read paths to use it).
+// WalletTransaction above is NOT replaced yet — both exist side by side
+// until that migration lands, so nothing currently reads from the ledger.
+//
+// Design: one row per (account, direction) rather than one row per
+// debit/credit PAIR, because a single economic event often has more than
+// two legs — a payout run debits one escrow account once but credits many
+// winners plus the Boardman's and the platform's commission accounts.
+// Everything that happened as one atomic event shares a `groupId`; the
+// ledger's core invariant is that every group's DEBIT amounts sum to
+// exactly its CREDIT amounts (enforced by ledgerService.postLedgerGroup,
+// not by anything in this file — Postgres has no easy way to check a
+// property across a dynamic set of sibling rows).
+enum LedgerAccountType {
+  USER_WALLET // mirrors an existing Wallet (Better or Boardman)
+  PLATFORM // the platform's own revenue account
+  ESCROW // one per competition, holds staked funds until payout (TASK-019)
+  EXTERNAL // singleton counterparty for money entering/leaving the system
+  // entirely (deposits, withdrawals) — the ledger's "outside world" account.
+}
+
+enum LedgerEntryDirection {
+  DEBIT
+  CREDIT
+}
+
+model LedgerAccount {
+  id            String            @id @default(cuid())
+  type          LedgerAccountType
+  walletId      String?           @unique
+  wallet        Wallet?           @relation(fields: [walletId], references: [id])
+  competitionId String?           @unique
+  competition   Competition?      @relation(fields: [competitionId], references: [id])
+  createdAt     DateTime          @default(now())
+
+  entries LedgerEntry[]
+
+  @@index([type])
+}
+
+model LedgerEntry {
+  id             String               @id @default(cuid())
+  groupId        String
+  accountId      String
+  account        LedgerAccount        @relation(fields: [accountId], references: [id])
+  direction      LedgerEntryDirection
+  amount         Decimal              @db.Decimal(14, 2)
+  referenceType  String
+  referenceId    String
+  note           String?
+  createdAt      DateTime             @default(now())
+
+  @@index([accountId])
+  @@index([groupId])
   @@index([referenceType, referenceId])
 }
 
@@ -201,12 +306,13 @@ model Competition {
   payoutAttemptCount Int      @default(0)
   lastPayoutError    String?
 
-  participants CompetitionParticipant[]
-  betOptions   BetOption[]
-  bets         Bet[]
-  result       Result?
-  commission   Commission?
-  disputes     Dispute[]
+  participants  CompetitionParticipant[]
+  betOptions    BetOption[]
+  bets          Bet[]
+  result        Result?
+  commission    Commission?
+  disputes      Dispute[]
+  ledgerAccount LedgerAccount?
 
   @@index([status])
   @@index([boardmanProfileId])
@@ -358,4 +464,70 @@ model SystemSetting {
   value           String
   updatedByAdminId String?
   updatedAt       DateTime @updatedAt
+}
+
+enum OtpPurpose {
+  SIGNUP
+  BANK_ACCOUNT_CHANGE
+}
+
+enum KycTier {
+  TIER_0
+  TIER_1
+}
+
+// Staff sub-roles (TASK-030), distinct from the base Role enum (which just
+// says "this account can reach admin routes at all"). See
+// server/config/staffPermissions.js for what each one can actually do.
+enum StaffRole {
+  SUPPORT
+  FINANCE
+  COMPLIANCE
+  SUPER_ADMIN
+}
+
+enum KycIdType {
+  BVN
+  NIN
+}
+
+// One row per verification attempt (TASK-026). The raw BVN/NIN is never
+// stored — only its hash, same reasoning as passwordHash/OtpCode.codeHash.
+// Kept even for a mismatch: it's the audit trail for "this user tried to
+// verify and failed", which matters for fraud review.
+model KycVerification {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  idType       KycIdType
+  valueHash    String
+  matched      Boolean
+  // The provider's own record of date of birth (TASK-028) — never
+  // self-reported, since that would be trivially fakeable. Only set when
+  // matched is true; a real provider returns this as part of a successful
+  // lookup, which is also why age enforcement lives here rather than at
+  // basic phone/PIN registration, where no verified DOB exists yet.
+  dateOfBirth  DateTime?
+  underage     Boolean   @default(false)
+  provider     String
+  verifiedAt   DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// One-time codes for phone verification (TASK-025). `code` stores a hash,
+// never the raw digits — same reasoning as passwordHash. A phone can have
+// several rows over time (one per request); only the latest unconsumed,
+// unexpired one for a given phone+purpose is valid.
+model OtpCode {
+  id          String     @id @default(cuid())
+  phone       String
+  purpose     OtpPurpose
+  codeHash    String
+  attempts    Int        @default(0)
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime   @default(now())
+
+  @@index([phone, purpose])
 }

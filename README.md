@@ -44,6 +44,22 @@ npm run dev                   # http://localhost:5173
 Open http://localhost:5173 and log in with one of the seeded demo accounts
 (phone numbers and passwords are in your `.env`, under `SEED_*`).
 
+## Full stack in Docker
+
+Needs only Docker. Runs Postgres, migrations, the API, the worker, and the
+client behind nginx, in production mode:
+
+```bash
+docker compose up --build                            # http://localhost:8080
+docker compose run --rm migrate npx prisma db seed   # optional demo accounts
+docker compose down -v                               # stop and wipe the database
+```
+
+The server image has three targets (`api`, `worker`, `migrate`); the
+client image is nginx serving the built SPA and proxying `/api` to the
+API. See the comments in `Dockerfile`, `client/Dockerfile`, and
+`docker-compose.yml`.
+
 ## Running Tests
 
 ```bash

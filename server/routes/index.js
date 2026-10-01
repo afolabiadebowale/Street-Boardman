@@ -1,6 +1,7 @@
 const router = require('express').Router();
 
 router.use('/auth', require('./auth'));
+router.use('/otp', require('./otp'));
 router.use('/users', require('./users'));
 router.use('/boardmen', require('./boardmen'));
 router.use('/wallet', require('./wallet'));

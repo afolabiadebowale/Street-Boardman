@@ -12,21 +12,32 @@ function normalizeName(name) {
 }
 
 // Heuristic-only, flag-not-block check for a Boardman betting on their own
-// competition from a second account (TASK-014). Real device/identity
-// matching (FEAT-017, Phase 1) doesn't exist yet, so this is deliberately
-// partial: the only signal available today without new infrastructure is
-// whether the bettor's registered name matches the Boardman's own name.
-// That's weak — it catches the laziest version of the abuse and nothing
-// more — but it's a real, honest signal rather than pretending to detect
-// something the app can't yet see. A match is logged for Admin review,
-// never blocked automatically: see the open product decision in the
-// implementation plan on whether/when to hard-block.
+// competition from a second account (TASK-014). Two weak signals, either
+// one enough to flag: the bettor's registered name matches the Boardman's
+// own name, or (TASK-029) they registered from the same device
+// fingerprint. Neither is proof — shared wifi/a family device can trigger
+// the second, a common name the first — but both are real, honest signals
+// rather than pretending to detect something the app can't yet see. A
+// match is logged for Admin review, never blocked automatically: see the
+// open product decision in the implementation plan on whether/when to
+// hard-block.
 async function flagIfSelfBettingSuspected(tx, { betId, betterId, boardmanProfile }) {
   const [better, boardmanUser] = await Promise.all([
-    tx.user.findUnique({ where: { id: betterId }, select: { fullName: true } }),
-    tx.user.findUnique({ where: { id: boardmanProfile.userId }, select: { fullName: true } }),
+    tx.user.findUnique({ where: { id: betterId }, select: { fullName: true, deviceFingerprint: true } }),
+    tx.user.findUnique({
+      where: { id: boardmanProfile.userId },
+      select: { fullName: true, deviceFingerprint: true },
+    }),
   ]);
-  if (normalizeName(better.fullName) !== normalizeName(boardmanUser.fullName)) return;
+
+  const nameMatches = normalizeName(better.fullName) === normalizeName(boardmanUser.fullName);
+  const deviceMatches =
+    Boolean(better.deviceFingerprint) && better.deviceFingerprint === boardmanUser.deviceFingerprint;
+  if (!nameMatches && !deviceMatches) return;
+
+  const reasons = [];
+  if (nameMatches) reasons.push('name matches the Boardman');
+  if (deviceMatches) reasons.push('registered from the same device as the Boardman');
 
   await recordAuditLog(
     {
@@ -36,7 +47,7 @@ async function flagIfSelfBettingSuspected(tx, { betId, betterId, boardmanProfile
       entityId: betId,
       beforeState: null,
       afterState: {
-        reason: 'Bettor name matches the Boardman name for this competition',
+        reason: reasons.join('; '),
         betterId,
         boardmanUserId: boardmanProfile.userId,
       },
@@ -65,72 +76,65 @@ async function placeBet({ betterId, betOptionId, stake }) {
     throw new AppError('Betting deadline has passed', 400);
   }
 
-  // Retry once on the rare chance two bets compute the same sequential
-  // code at the same instant — the DB's unique constraint is the real
-  // guard, this just avoids surfacing that as a user-facing error.
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const betCode = await generateBetCode(prisma);
-    try {
-      return await prisma.$transaction(async (tx) => {
-        const wallet = await walletService.getWalletByUserId(tx, betterId);
+  // Rough live estimate only: (this bet's share of its option) times the
+  // whole pool, minus commission, as if this bet were already counted.
+  // The real payout is only known once betting closes — the UI labels
+  // this as an estimate. Read without locks, BEFORE the transaction: on a
+  // busy match every bet increments one of the same few BetOption rows,
+  // and the load test (TASK-048) showed bets queueing on that row lock
+  // (Postgres sessions waiting on Lock:transactionid, p95 ~0.9-1.3 s at
+  // 200 bettors). Computing this inside the transaction after the
+  // increment held the lock through two more round trips.
+  const options = await prisma.betOption.findMany({ where: { competitionId: competition.id } });
+  const poolAfter = options.reduce((sum, o) => sum.plus(toDecimal(o.totalStaked)), stakeDecimal);
+  const optionAfter = toDecimal(options.find((o) => o.id === betOptionId).totalStaked).plus(stakeDecimal);
+  const estimatedPayout = round2(
+    poolAfter
+      .times(1 - competition.boardmanCommissionRate - competition.platformCommissionRate)
+      .times(stakeDecimal.dividedBy(optionAfter))
+  );
 
-        const bet = await tx.bet.create({
-          data: {
-            betCode,
-            betterId,
-            competitionId: competition.id,
-            betOptionId,
-            stake: stakeDecimal,
-            potentialPayout: stakeDecimal, // placeholder estimate, refined below
-            status: 'OPEN',
-          },
-        });
+  return prisma.$transaction(async (tx) => {
+    const betCode = await generateBetCode(tx);
+    const wallet = await walletService.getWalletByUserId(tx, betterId);
 
-        await walletService.applyWalletTransaction(tx, {
-          walletId: wallet.id,
-          type: 'BET_STAKE',
-          delta: stakeDecimal.negated(),
-          referenceType: 'Bet',
-          referenceId: bet.id,
-          note: `Stake on "${betOption.label}" — ${competition.title}`,
-        });
+    const bet = await tx.bet.create({
+      data: {
+        betCode,
+        betterId,
+        competitionId: competition.id,
+        betOptionId,
+        stake: stakeDecimal,
+        potentialPayout: estimatedPayout,
+        status: 'OPEN',
+      },
+    });
 
-        await flagIfSelfBettingSuspected(tx, {
-          betId: bet.id,
-          betterId,
-          boardmanProfile: competition.boardmanProfile,
-        });
+    await walletService.applyWalletTransaction(tx, {
+      walletId: wallet.id,
+      type: 'BET_STAKE',
+      delta: stakeDecimal.negated(),
+      referenceType: 'Bet',
+      referenceId: bet.id,
+      note: `Stake on "${betOption.label}" — ${competition.title}`,
+      counterparty: { type: 'ESCROW', competitionId: competition.id },
+    });
 
-        const updatedOption = await tx.betOption.update({
-          where: { id: betOptionId },
-          data: { totalStaked: { increment: stakeDecimal } },
-        });
+    await flagIfSelfBettingSuspected(tx, {
+      betId: bet.id,
+      betterId,
+      boardmanProfile: competition.boardmanProfile,
+    });
 
-        // Rough live estimate only: (this bet's share of the option so far)
-        // times the current whole-competition pool, minus commission. The
-        // real payout is only known once betting closes and all stakes are
-        // in — this is clearly labelled as an estimate to the Better.
-        const allOptions = await tx.betOption.findMany({ where: { competitionId: competition.id } });
-        const wholePool = allOptions.reduce((sum, o) => sum.plus(toDecimal(o.totalStaked)), toDecimal(0));
-        const afterCommission = wholePool
-          .times(1 - competition.boardmanCommissionRate - competition.platformCommissionRate);
-        const estimatedPayout = round2(
-          afterCommission.times(stakeDecimal.dividedBy(toDecimal(updatedOption.totalStaked)))
-        );
+    // Last statement before commit, so the hot row is locked for as
+    // little time as possible (see the estimate above).
+    const updatedOption = await tx.betOption.update({
+      where: { id: betOptionId },
+      data: { totalStaked: { increment: stakeDecimal } },
+    });
 
-        return tx.bet.update({
-          where: { id: bet.id },
-          data: { potentialPayout: estimatedPayout },
-          include: { betOption: true },
-        });
-      });
-    } catch (err) {
-      const isBetCodeCollision = err.code === 'P2002' && err.meta?.target?.includes('betCode');
-      if (isBetCodeCollision && attempt < 2) continue;
-      throw err;
-    }
-  }
-  throw new AppError('Could not place bet, please try again', 500);
+    return { ...bet, betOption: updatedOption };
+  });
 }
 
 async function listBetsForBetter(betterId) {

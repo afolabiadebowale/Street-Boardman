@@ -48,7 +48,7 @@ async function claimForPayout(competitionId) {
 // so finding one already means this bet was fully paid by an earlier
 // attempt — nothing left to do. This is what makes retrying a partially
 // completed payout run (TASK-005) safe to just call again.
-async function payOneBet(bet, amount, competitionTitle) {
+async function payOneBet(bet, amount, competitionTitle, competitionId) {
   const idempotencyKey = `payout:${bet.id}`;
   return prisma.$transaction(async (tx) => {
     const existing = await tx.payout.findUnique({ where: { idempotencyKey } });
@@ -65,6 +65,7 @@ async function payOneBet(bet, amount, competitionTitle) {
       referenceType: 'Payout',
       referenceId: payout.id,
       note: `Winnings — ${competitionTitle}`,
+      counterparty: { type: 'ESCROW', competitionId },
     });
     const processed = await tx.payout.update({
       where: { id: payout.id },
@@ -121,6 +122,7 @@ async function finalizePayout(competitionId, competition, commission, losingBetI
       referenceType: 'Commission',
       referenceId: commissionRow.id,
       note: `Boardman commission — ${competition.title}`,
+      counterparty: { type: 'ESCROW', competitionId },
     });
     await walletService.applyWalletTransaction(tx, {
       walletId: platformWallet.id,
@@ -129,6 +131,7 @@ async function finalizePayout(competitionId, competition, commission, losingBetI
       referenceType: 'Commission',
       referenceId: commissionRow.id,
       note: `Platform commission — ${competition.title}`,
+      counterparty: { type: 'ESCROW', competitionId },
     });
 
     await tx.competition.update({ where: { id: competitionId }, data: { status: 'COMPLETED' } });
@@ -184,13 +187,13 @@ async function processPayoutsForCompetition(competitionId) {
 
   for (const { betId, amount } of payouts) {
     const bet = winningBets.find((b) => b.id === betId);
-    await payOneBet(bet, amount, competition.title);
+    await payOneBet(bet, amount, competition.title, competitionId);
   }
 
-  // Rounding each winner's share independently can leave a few kobo
-  // unallocated (or, in principle, over-allocated by a kobo) versus the
-  // distributable pool. Whatever's left is folded into the platform's
-  // commission rather than silently dropped (TASK-007).
+  // Winners' shares are rounded down to the kobo, so a few kobo can be left
+  // unallocated — never over-allocated (TASK-045). The leftover is folded
+  // into the platform's commission rather than silently dropped (TASK-007),
+  // and is always >= 0.
   const paidTotal = payouts.reduce((sum, p) => sum.plus(p.amount), toDecimal(0));
   const remainder = commission.distributablePool.minus(paidTotal);
   const adjustedCommission = { ...commission, platformAmount: commission.platformAmount.plus(remainder) };
@@ -210,19 +213,38 @@ async function processPayoutsForCompetition(competitionId) {
 // for now (not in TASK-006's scope) but worth the same chunking treatment
 // if a competition can realistically gather hundreds of bets before being
 // cancelled.
+//
+// Concurrency: two refunds racing (a worker retry overlapping the first
+// run, or an admin cancel during the auto-confirm sweep) used to BOTH
+// refund every bet — each read "not finalized" and the same OPEN bets
+// before either committed. Found by the money-conservation property test
+// (TASK-045). Now the competition is claimed with a conditional update
+// first: Postgres row-locks it, so the second transaction waits, then
+// matches zero rows and skips. Each bet is also flipped OPEN -> REFUNDED
+// conditionally before any money moves, as a second guard.
 async function cancelAndRefundCompetition(competitionId) {
   return prisma.$transaction(async (tx) => {
+    const claim = await tx.competition.updateMany({
+      where: { id: competitionId, status: { notIn: ['COMPLETED', 'CANCELLED_REFUNDED'] } },
+      data: { status: 'CANCELLED_REFUNDED' },
+    });
+    if (claim.count === 0) {
+      const exists = await tx.competition.findUnique({ where: { id: competitionId }, select: { id: true } });
+      if (!exists) throw new AppError('Competition not found', 404);
+      return { skipped: true, reason: 'Already finalized' };
+    }
+
     const competition = await tx.competition.findUnique({
       where: { id: competitionId },
       include: { betOptions: { include: { bets: true } } },
     });
-    if (!competition) throw new AppError('Competition not found', 404);
-    if (['COMPLETED', 'CANCELLED_REFUNDED'].includes(competition.status)) {
-      return { skipped: true, reason: 'Already finalized' };
-    }
 
     const openBets = competition.betOptions.flatMap((o) => o.bets).filter((b) => b.status === 'OPEN');
+    let refundedCount = 0;
     for (const bet of openBets) {
+      const flipped = await tx.bet.updateMany({ where: { id: bet.id, status: 'OPEN' }, data: { status: 'REFUNDED' } });
+      if (flipped.count === 0) continue;
+      refundedCount += 1;
       const wallet = await walletService.getWalletByUserId(tx, bet.betterId);
       await walletService.applyWalletTransaction(tx, {
         walletId: wallet.id,
@@ -231,12 +253,11 @@ async function cancelAndRefundCompetition(competitionId) {
         referenceType: 'Bet',
         referenceId: bet.id,
         note: `Refund — ${competition.title} cancelled`,
+        counterparty: { type: 'ESCROW', competitionId },
       });
-      await tx.bet.update({ where: { id: bet.id }, data: { status: 'REFUNDED' } });
     }
 
-    await tx.competition.update({ where: { id: competitionId }, data: { status: 'CANCELLED_REFUNDED' } });
-    return { skipped: false, refundedCount: openBets.length };
+    return { skipped: false, refundedCount };
   });
 }
 

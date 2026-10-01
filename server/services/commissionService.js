@@ -1,4 +1,4 @@
-const { toDecimal, round2 } = require('../utils/money');
+const { toDecimal, round2, Decimal } = require('../utils/money');
 
 // Given everything staked on a competition (every option combined), works
 // out the Boardman's cut, the Platform's cut, and what's left to share
@@ -17,12 +17,19 @@ function calculateCommission(totalStakePool, boardmanRate, platformRate) {
 // pool proportional to its share of everything staked on the winning
 // option. Example: distributablePool = 92,000, winning option total =
 // 40,000, a bet of 5,000 on that option gets (5000/40000) * 92000 = 11,500.
+//
+// Each share is rounded DOWN to the kobo. Rounding half-up let the shares
+// sum to more than the pool (e.g. three equal winners splitting ₦0.02 got
+// ₦0.01 each), paying out money that wasn't there. Rounding down means
+// payouts never exceed the pool; the leftover, under one kobo per winner,
+// goes to the platform (see payoutService). Found by property tests,
+// TASK-045.
 function calculateWinnerPayouts(winningBets, winningOptionTotalStaked, distributablePool) {
   const optionTotal = toDecimal(winningOptionTotalStaked);
   if (optionTotal.lte(0)) return [];
   return winningBets.map((bet) => {
     const share = toDecimal(bet.stake).dividedBy(optionTotal);
-    const amount = round2(toDecimal(distributablePool).times(share));
+    const amount = toDecimal(distributablePool).times(share).toDecimalPlaces(2, Decimal.ROUND_DOWN);
     return { betId: bet.id, amount };
   });
 }

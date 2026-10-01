@@ -1,4 +1,4 @@
-const { verifyAccessToken } = require('../utils/jwt');
+const { verifyAccessToken, isCurrentTokenVersion } = require('../utils/jwt');
 const { COOKIE_NAMES } = require('../config/constants');
 const prisma = require('../config/db');
 const AppError = require('../utils/appError');
@@ -19,6 +19,8 @@ const requireAuth = asyncHandler(async (req, res, next) => {
 
   const user = await prisma.user.findUnique({ where: { id: payload.sub } });
   if (!user) throw new AppError('User not found', 401);
+  // Revoked by logout or an MFA change since this token was issued.
+  if (!isCurrentTokenVersion(payload, user)) throw new AppError('Session expired, please log in again', 401);
   if (user.status === 'SUSPENDED') throw new AppError('Account suspended', 403);
 
   req.user = user;

@@ -12,6 +12,10 @@ async function setupFundedBetter(amount = 20000) {
     .post('/api/auth/register/better')
     .send({ fullName: 'Wale Better', phone, pin: '1234' });
   await agent.post('/api/deposits/demo').send({ amount });
+  // Withdrawals require TIER_1 KYC (TASK-027) — these tests are about
+  // withdrawal atomicity/behaviour, not KYC gating itself, so treat the
+  // user as already verified.
+  await prisma.user.update({ where: { id: res.body.user.id }, data: { kycTier: 'TIER_1' } });
   return { agent, userId: res.body.user.id };
 }
 

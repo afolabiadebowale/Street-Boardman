@@ -3,6 +3,7 @@ const app = require('../../server/app');
 const { resetDatabase, prisma } = require('../helpers/reset');
 const adminService = require('../../server/services/adminService');
 const resultService = require('../../server/services/resultService');
+const logger = require('../../server/utils/logger');
 
 async function setupApprovedBoardman(phone) {
   const admin = await prisma.user.create({
@@ -106,7 +107,7 @@ describe('resultService.retryStuckPayouts (TASK-005)', () => {
     // platform wallet, which getPlatformWallet requires during finalize.
     await prisma.wallet.deleteMany({ where: { walletType: 'PLATFORM' } });
 
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = jest.spyOn(logger, 'error');
 
     for (let i = 0; i < 5; i += 1) {
       await backdateUpdatedAt(competitionId, 5);
@@ -121,8 +122,8 @@ describe('resultService.retryStuckPayouts (TASK-005)', () => {
 
     const exhaustedLog = errorSpy.mock.calls
       .map((args) => args[0])
-      .find((line) => typeof line === 'string' && line.includes('payout_retries_exhausted'));
-    expect(exhaustedLog).toBeDefined();
+      .find((obj) => obj && obj.event === 'payout_retries_exhausted');
+    expect(exhaustedLog).toMatchObject({ competitionId, attempts: 3 });
 
     errorSpy.mockRestore();
   });

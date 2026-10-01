@@ -71,14 +71,31 @@ describe('depositService.handlePaystackChargeSuccess — webhook hardening (TASK
 });
 
 describe('depositService.verifyPaystackSignature — constant-time comparison (TASK-004)', () => {
-  it('accepts a correctly signed body and rejects a tampered one', () => {
-    const crypto = require('crypto');
-    const env = require('../../server/config/env');
-    const body = Buffer.from(JSON.stringify({ event: 'charge.success', data: { reference: 'x' } }));
-    const validSignature = crypto.createHmac('sha512', env.paystack.webhookSecret).update(body).digest('hex');
+  const crypto = require('crypto');
+  const env = require('../../server/config/env');
+  const body = Buffer.from(JSON.stringify({ event: 'charge.success', data: { reference: 'x' } }));
+  const sign = (secret) => crypto.createHmac('sha512', secret).update(body).digest('hex');
+  let originalSecret;
 
-    expect(depositService.verifyPaystackSignature(body, validSignature)).toBe(true);
+  beforeEach(() => {
+    originalSecret = env.paystack.webhookSecret;
+  });
+  afterEach(() => {
+    env.paystack.webhookSecret = originalSecret;
+  });
+
+  it('accepts a correctly signed body and rejects a tampered one', () => {
+    env.paystack.webhookSecret = 'test-webhook-secret';
+
+    expect(depositService.verifyPaystackSignature(body, sign('test-webhook-secret'))).toBe(true);
+    expect(depositService.verifyPaystackSignature(body, sign('some-other-secret'))).toBe(false);
     expect(depositService.verifyPaystackSignature(body, 'not-a-valid-signature')).toBe(false);
     expect(depositService.verifyPaystackSignature(body, undefined)).toBe(false);
+  });
+
+  it('rejects everything when no webhook secret is configured, even a "correct" empty-key signature', () => {
+    env.paystack.webhookSecret = '';
+
+    expect(depositService.verifyPaystackSignature(body, sign(''))).toBe(false);
   });
 });

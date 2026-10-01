@@ -1,15 +1,19 @@
 require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
+const walletService = require('../server/services/walletService');
 
 const prisma = new PrismaClient();
 
-async function upsertUserWithWallet({ role, fullName, phone, pin, walletType }) {
+async function upsertUserWithWallet({ role, fullName, phone, pin, walletType, staffRole }) {
   const passwordHash = await bcrypt.hash(pin, 10);
   const user = await prisma.user.upsert({
     where: { phone },
-    update: {},
-    create: { role, fullName, phone, passwordHash },
+    // Re-running the seed against an already-seeded database (this
+    // repo's own dev DB, mid-session) should still grant staffRole to an
+    // existing admin row, not just a freshly created one.
+    update: staffRole ? { staffRole } : {},
+    create: { role, fullName, phone, passwordHash, staffRole: staffRole ?? undefined },
   });
   await prisma.wallet.upsert({
     where: { userId: user.id },
@@ -62,6 +66,9 @@ async function main() {
     phone: process.env.SEED_ADMIN_PHONE || '08000000000',
     pin: process.env.SEED_ADMIN_PASSWORD || 'Admin@12345',
     walletType: 'PLATFORM',
+    // Full access (TASK-030) — without this the seeded admin could log in
+    // but couldn't do anything, since staffRole defaults to null.
+    staffRole: 'SUPER_ADMIN',
   });
 
   const boardmanUser = await upsertUserWithWallet({
@@ -91,22 +98,24 @@ async function main() {
     walletType: 'BETTER',
   });
 
-  // Give the demo Better some starting demo funds so they can bet right away.
+  // Give the demo Better some starting demo funds so they can bet right
+  // away. Goes through applyWalletTransaction like every other money
+  // movement, so the double-entry ledger records it too. Writing the
+  // balance directly (as this used to) left every seeded environment
+  // failing the nightly wallet-vs-ledger reconciliation from day one.
   const betterWallet = await prisma.wallet.findUnique({ where: { userId: better.id } });
   if (Number(betterWallet.balance) === 0) {
-    await prisma.wallet.update({ where: { id: betterWallet.id }, data: { balance: 20000 } });
-    await prisma.walletTransaction.create({
-      data: {
+    await prisma.$transaction((tx) =>
+      walletService.applyWalletTransaction(tx, {
         walletId: betterWallet.id,
         type: 'DEPOSIT',
-        amount: 20000,
-        balanceBefore: 0,
-        balanceAfter: 20000,
+        delta: 20000,
         referenceType: 'Seed',
         referenceId: 'seed-script',
         note: 'Starting demo balance',
-      },
-    });
+        counterparty: { type: 'EXTERNAL' },
+      })
+    );
   }
 
   const boardmanProfile = await prisma.boardmanProfile.findUnique({ where: { userId: boardmanUser.id } });

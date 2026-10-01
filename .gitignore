@@ -7,3 +7,10 @@ client/dist/
 coverage/
 .DS_Store
 .prisma-engines/
+loadtest/results/*
+!loadtest/results/.gitkeep
+
+# Terraform local caches (the provider lock files ARE committed)
+.terraform/
+*.tfstate
+*.tfstate.*

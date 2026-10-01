@@ -34,6 +34,7 @@ import Settings from './routes/admin/Settings';
 import Users from './routes/admin/Users';
 import Ledger from './routes/admin/Ledger';
 import AuditLogs from './routes/admin/AuditLogs';
+import Security from './routes/admin/Security';
 
 export default function App() {
   return (
@@ -71,6 +72,7 @@ export default function App() {
       <Route path="/admin/users" element={<ProtectedRoute role="ADMIN"><Users /></ProtectedRoute>} />
       <Route path="/admin/ledger" element={<ProtectedRoute role="ADMIN"><Ledger /></ProtectedRoute>} />
       <Route path="/admin/audit-logs" element={<ProtectedRoute role="ADMIN"><AuditLogs /></ProtectedRoute>} />
+      <Route path="/admin/security" element={<ProtectedRoute role="ADMIN"><Security /></ProtectedRoute>} />
 
       <Route path="*" element={<Landing />} />
     </Routes>

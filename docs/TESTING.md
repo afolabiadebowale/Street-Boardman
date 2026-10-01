@@ -170,3 +170,67 @@ returned — check nothing else is holding a long transaction open against
 **"relation does not exist" errors during tests**
 The migration wasn't applied to `streetboardman_test`. Re-run step 5's
 `prisma migrate deploy` against that database.
+
+**"Refusing to wipe database ..."**
+`tests/helpers/reset.js` deletes every row, so it checks the database it's
+connected to and refuses anything whose name doesn't contain `test`. If
+you see this, `.env.test` is pointing at the wrong database: fix
+`DATABASE_URL` / `APP_DATABASE_URL` there. (`tests/setupEnv.js` loads
+`.env.test` before any test code, because importing `@prisma/client`
+would otherwise pull in your dev `.env` first.)
+
+**"password authentication failed for user streetboardman_app"**
+The role's password doesn't match `APP_DATABASE_URL`. Postgres roles are
+shared across every database on the server, so if you ran
+`prisma/roles.sql` against both your dev and test databases with
+different passwords, only the last one is live. Re-run it with one
+password and use that same value in both `.env` and `.env.test`.
+
+---
+
+## Hermetic runs (no database setup)
+
+If Docker is running, you can skip all the Postgres setup above:
+
+```bash
+npm run test:hermetic
+```
+
+This starts a throwaway Postgres 16 container (via Testcontainers),
+applies every migration, provisions the `streetboardman_app` role, runs
+the whole suite through it, and deletes the container afterwards. It
+takes about a minute longer than `npm test`, and it can't touch any other
+database on your machine.
+
+## Property-based money tests
+
+`tests/unit/moneyProperties.test.js` and
+`tests/integration/moneyConservation.property.test.js` use
+[fast-check](https://fast-check.dev). Instead of a few hand-picked
+examples, they generate random pools, stakes, commission rates,
+outcomes, and concurrent settlements, and check invariants that must
+always hold: no naira created or destroyed, the ledger agrees with every
+wallet, escrow ends empty, and settling twice pays once. When one fails,
+fast-check shrinks it to the smallest failing example and prints it.
+Pin that example in the test's `examples` list once it's fixed.
+
+The integration property runs 30 random competitions by default. Run
+more before touching payout or refund code:
+
+```bash
+PROPERTY_RUNS=300 npx jest tests/integration/moneyConservation.property.test.js
+```
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every pull request and every push to
+`main`. It has two jobs:
+
+- **Server tests**: starts a fresh Postgres 16, applies every migration
+  with `prisma migrate deploy`, provisions the `streetboardman_app` role
+  from `prisma/roles.sql`, then runs `npm test` through that restricted
+  role. A migration that doesn't apply cleanly to an empty database, or
+  app code that suddenly needs DDL at runtime, fails the build.
+- **Client build**: `npm ci` and `npm run build` in `client/`.
+
+The Node version for both jobs comes from `.nvmrc`.

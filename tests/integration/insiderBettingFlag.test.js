@@ -4,7 +4,11 @@ const { resetDatabase, prisma } = require('../helpers/reset');
 const adminService = require('../../server/services/adminService');
 
 let userCounter = 0;
-async function setupApprovedBoardman(fullName) {
+// Distinct User-Agent per call (TASK-029) so these tests exercise the
+// name-matching signal in isolation, not accidentally the shared-device
+// signal too — both agents otherwise come from the same loopback IP with
+// supertest's default UA, which would look like the same device.
+async function setupApprovedBoardman(fullName, userAgent = 'insider-test-boardman-device') {
   userCounter += 1;
   const admin = await prisma.user.create({
     data: { role: 'ADMIN', fullName: 'Insider Admin', phone: `0830${String(userCounter).padStart(7, '0')}`, passwordHash: 'x' },
@@ -13,12 +17,15 @@ async function setupApprovedBoardman(fullName) {
 
   userCounter += 1;
   const boardmanAgent = request.agent(app);
-  const res = await boardmanAgent.post('/api/auth/register/boardman').send({
-    fullName,
-    phone: `0831${String(userCounter).padStart(7, '0')}`,
-    pin: '1234',
-    businessLocation: 'Lagos',
-  });
+  const res = await boardmanAgent
+    .post('/api/auth/register/boardman')
+    .set('User-Agent', userAgent)
+    .send({
+      fullName,
+      phone: `0831${String(userCounter).padStart(7, '0')}`,
+      pin: '1234',
+      businessLocation: 'Lagos',
+    });
   const boardmanUserId = res.body.user.id;
   const profile = await prisma.boardmanProfile.findUnique({ where: { userId: boardmanUserId } });
   await adminService.approveBoardman(profile.id, admin.id);
@@ -34,11 +41,11 @@ async function setupApprovedBoardman(fullName) {
   } };
 }
 
-async function setupFundedBetter(fullName, amount = 10000) {
+async function setupFundedBetter(fullName, amount = 10000, userAgent = 'insider-test-better-device') {
   userCounter += 1;
   const phone = `0832${String(userCounter).padStart(7, '0')}`;
   const agent = request.agent(app);
-  await agent.post('/api/auth/register/better').send({ fullName, phone, pin: '1234' });
+  await agent.post('/api/auth/register/better').set('User-Agent', userAgent).send({ fullName, phone, pin: '1234' });
   await agent.post('/api/deposits/demo').send({ amount });
   return { agent };
 }

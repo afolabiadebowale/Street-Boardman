@@ -37,6 +37,9 @@ async function setupFundedBetter(amount = 20000) {
   const agent = request.agent(app);
   const res = await agent.post('/api/auth/register/better').send({ fullName: 'Audit Better', phone, pin: '1234' });
   await agent.post('/api/deposits/demo').send({ amount });
+  // Withdrawals require TIER_1 KYC (TASK-027) — not what these tests
+  // are exercising, so treat the user as already verified.
+  await prisma.user.update({ where: { id: res.body.user.id }, data: { kycTier: 'TIER_1' } });
   return { agent, userId: res.body.user.id };
 }
 

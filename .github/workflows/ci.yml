@@ -1,0 +1,130 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  server:
+    name: Server tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: streetboardman_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      NODE_ENV: test
+      APP_MODE: DEMO
+      # Migrations run as the owner role; the app and tests run as the
+      # least-privilege role from prisma/roles.sql (TASK-034), same as
+      # production — so CI fails if anything starts needing DDL at runtime.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/streetboardman_test?schema=public
+      APP_DATABASE_URL: postgresql://streetboardman_app:ci_app_password@localhost:5432/streetboardman_test?schema=public
+      JWT_ACCESS_SECRET: ci-access-secret
+      JWT_REFRESH_SECRET: ci-refresh-secret
+      JWT_MFA_CHALLENGE_SECRET: ci-mfa-challenge-secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+
+      - name: Provision least-privilege app role
+        run: >-
+          psql "postgresql://postgres:postgres@localhost:5432/streetboardman_test"
+          -v ON_ERROR_STOP=1 -v app_password=ci_app_password -f prisma/roles.sql
+
+      - name: Run tests
+        run: npm test
+
+  client:
+    name: Client build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
+
+  infra:
+    name: Infrastructure checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+      - name: Format
+        run: terraform -chdir=infra fmt -recursive -check
+      - name: Validate
+        run: |
+          for dir in infra/terraform infra/bootstrap; do
+            terraform -chdir="$dir" init -backend=false -input=false
+            terraform -chdir="$dir" validate
+          done
+      - uses: terraform-linters/setup-tflint@v4
+      - name: Lint
+        run: |
+          cd infra/terraform
+          for env in dev staging prod; do tflint --var-file="envs/$env.tfvars"; done
+      # Deliberate exceptions are documented inline as checkov:skip with a reason.
+      - name: Security scan
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: infra
+          framework: terraform
+          quiet: true
+      - name: Workflow lint
+        uses: raven-actions/actionlint@v2
+
+  images:
+    name: Docker images
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      # Builds every target (api, worker, migrate, web) exactly as
+      # docker-compose.yml wires them, so a broken Dockerfile fails the PR
+      # rather than the deploy.
+      - run: docker compose build

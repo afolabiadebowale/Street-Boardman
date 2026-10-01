@@ -3,6 +3,7 @@ const prisma = require('../config/db');
 const adminService = require('../services/adminService');
 const settingsService = require('../services/settingsService');
 const resultService = require('../services/resultService');
+const { STAFF_VISIBLE_USER_FIELDS } = require('../utils/userSelect');
 
 const listPendingBoardmen = asyncHandler(async (req, res) => {
   res.json({ boardmen: await adminService.listPendingBoardmen() });
@@ -41,9 +42,18 @@ const reactivateUser = asyncHandler(async (req, res) => {
   res.json({ user });
 });
 
+const setStaffRole = asyncHandler(async (req, res) => {
+  const user = await adminService.setStaffRole(req.params.id, req.body.staffRole, req.user.id);
+  res.json({ user });
+});
+
 const listCompetitions = asyncHandler(async (req, res) => {
   const competitions = await prisma.competition.findMany({
-    include: { betOptions: true, result: true, boardmanProfile: { include: { user: true } } },
+    include: {
+      betOptions: true,
+      result: true,
+      boardmanProfile: { include: { user: { select: STAFF_VISIBLE_USER_FIELDS } } },
+    },
     orderBy: { createdAt: 'desc' },
   });
   res.json({ competitions });
@@ -118,6 +128,7 @@ module.exports = {
   listUsers,
   suspendUser,
   reactivateUser,
+  setStaffRole,
   listCompetitions,
   listBets,
   listDisputes,

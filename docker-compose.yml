@@ -1,0 +1,116 @@
+# Full stack locally: `docker compose up --build`, then open
+# http://localhost:8080. Optional demo data:
+#   docker compose run --rm migrate npx prisma db seed
+#
+# Runs with NODE_ENV=production so this exercises the same code paths as
+# a real deployment (secret checks, Secure cookies, least-privilege DB
+# role). The secrets below are local-only placeholders under COMPOSE_*
+# names on purpose, so values from your .env never leak in here.
+
+x-app-env: &app-env
+  NODE_ENV: production
+  APP_MODE: DEMO
+  PORT: 4000
+  CLIENT_ORIGIN: http://localhost:8080
+  # Exactly one proxy (the web container's nginx) sits in front of the API.
+  TRUST_PROXY_HOPS: 1
+  # api and worker only ever receive the restricted role's credentials.
+  DATABASE_URL: postgresql://streetboardman_app:${COMPOSE_APP_DB_PASSWORD:-local-compose-app-pw}@postgres:5432/streetboardman?schema=public
+  APP_DATABASE_URL: postgresql://streetboardman_app:${COMPOSE_APP_DB_PASSWORD:-local-compose-app-pw}@postgres:5432/streetboardman?schema=public
+  JWT_ACCESS_SECRET: ${COMPOSE_JWT_ACCESS_SECRET:-local-compose-access-secret-change-me-0001}
+  JWT_REFRESH_SECRET: ${COMPOSE_JWT_REFRESH_SECRET:-local-compose-refresh-secret-change-me-0002}
+  JWT_MFA_CHALLENGE_SECRET: ${COMPOSE_JWT_MFA_SECRET:-local-compose-mfa-challenge-secret-change-me-03}
+  # Production enforces the staff security gate (MFA + 12-char password)
+  # immediately. This local stack defaults it to far in the future so the
+  # seeded demo admin and the load tests keep working; set
+  # COMPOSE_STAFF_SECURITY_ENFORCED_FROM=2000-01-01 to try the gate locally.
+  STAFF_SECURITY_ENFORCED_FROM: ${COMPOSE_STAFF_SECURITY_ENFORCED_FROM:-2100-01-01}
+  # Optional — error tracking stays off unless set (TASK-042).
+  SENTRY_DSN: ${SENTRY_DSN:-}
+  SENTRY_ENVIRONMENT: local-compose
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${COMPOSE_DB_OWNER_PASSWORD:-local-compose-owner-pw}
+      POSTGRES_DB: streetboardman
+      APP_DB_PASSWORD: ${COMPOSE_APP_DB_PASSWORD:-local-compose-app-pw}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-init/10-app-role.sh:/docker-entrypoint-initdb.d/10-app-role.sh:ro
+      # .in suffix so the entrypoint doesn't also run it directly without
+      # the app_password variable — the .sh above runs it instead.
+      - ./prisma/roles.sql:/docker-entrypoint-initdb.d/roles.sql.in:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d streetboardman"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      target: migrate
+    environment:
+      DATABASE_URL: postgresql://postgres:${COMPOSE_DB_OWNER_PASSWORD:-local-compose-owner-pw}@postgres:5432/streetboardman?schema=public
+      SEED_ADMIN_PASSWORD: ${COMPOSE_SEED_ADMIN_PASSWORD:-Admin@12345}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      target: api
+    environment: *app-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    build:
+      context: .
+      target: worker
+    environment: *app-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: ./client
+      args:
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+    environment:
+      API_UPSTREAM: http://api:4000
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # Load tests (TASK-048) — only runs when asked for, see docs/LOAD_TESTING.md:
+  #   docker compose run --rm k6 run /scripts/hot-competition.js
+  # Talks to the API directly (not through nginx) so each simulated user
+  # can present its own client IP via X-Forwarded-For; TRUST_PROXY_HOPS=1
+  # above makes the API honour it, keeping per-IP limits per user.
+  k6:
+    image: grafana/k6:latest
+    profiles: ["loadtest"]
+    volumes:
+      - ./loadtest:/scripts
+    environment:
+      BASE_URL: http://api:4000
+      ADMIN_PHONE: "08000000000"
+      ADMIN_PIN: ${COMPOSE_SEED_ADMIN_PASSWORD:-Admin@12345}
+    depends_on:
+      api:
+        condition: service_healthy
+      worker:
+        condition: service_started
+
+volumes:
+  pgdata:

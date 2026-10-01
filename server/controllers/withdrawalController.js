@@ -1,7 +1,13 @@
 const asyncHandler = require('../utils/asyncHandler');
 const withdrawalService = require('../services/withdrawalService');
+const authService = require('../services/authService');
 
+// The PIN is re-checked here, at the HTTP boundary, because that's where
+// a hijacked session arrives (TASK-036 O3). The destination account is
+// part of this same request, so this also covers "change where my money
+// goes" — there's no separate bank-details endpoint.
 const requestWithdrawal = asyncHandler(async (req, res) => {
+  await authService.verifyPinStepUp(req.user.id, req.body.pin);
   const withdrawal = await withdrawalService.requestWithdrawal(req.user.id, req.body.amount, req.body.destination);
   res.status(201).json({ withdrawal });
 });
