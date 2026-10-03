@@ -13,6 +13,15 @@ Admin** (owns and manages the platform).
 > regulatory and payment review is complete — see
 > [docs/ENGINEER_MANUAL.md](docs/ENGINEER_MANUAL.md) section 7.
 
+## Tech Stack
+
+| Layer | Stack |
+|---|---|
+| API + worker | Node.js 22, Express 4, Prisma 7, PostgreSQL 16, Zod, Pino |
+| Client | React 19, React Router 7, Vite 8 — each role's screens load as their own lazy chunk |
+| Infra | Docker, AWS af-south-1 (ECS Fargate, RDS, ALB) via Terraform, GitHub Actions |
+| Observability | Sentry (server and client), structured Pino logs, CloudWatch alarms |
+
 ## Documentation
 
 | Doc | Audience | Covers |
@@ -22,10 +31,15 @@ Admin** (owns and manages the platform).
 | [docs/BOARDMAN_MANUAL.md](docs/BOARDMAN_MANUAL.md) | Boardmen/Operators | Approval, creating competitions, submitting results, commissions |
 | [docs/ENGINEER_MANUAL.md](docs/ENGINEER_MANUAL.md) | Developers / app managers | Full architecture, API reference, DB schema, deployment, security checklist, troubleshooting |
 | [docs/TESTING.md](docs/TESTING.md) | Developers | PostgreSQL setup on Windows, running the test suite, what each test covers |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | DevOps | AWS architecture, cost, Terraform, CI/CD deploys, creating the first admin |
+| [docs/LOAD_TESTING.md](docs/LOAD_TESTING.md) | Developers | k6 scenarios in `loadtest/` and how to read the results |
+| [docs/runbooks/](docs/runbooks/) | Operators | Operational procedures (e.g. database restore drill) |
+| [docs/security/](docs/security/) | Security reviewers | OWASP ASVS Level 2 review |
 
 ## Quick Start (local development)
 
-**Prerequisites**: Node.js 18+, a running PostgreSQL instance.
+**Prerequisites**: Node.js 22 (see `.nvmrc`; Vite 8 needs at least 20.19), a running
+PostgreSQL instance.
 
 ```bash
 # 1. Backend
@@ -34,6 +48,7 @@ npm install
 npx prisma migrate dev --name init
 npm run seed                  # creates demo Better/Boardman/Admin accounts
 npm run dev                   # http://localhost:4000
+npm run worker:dev            # separate terminal: background sweeps and payouts
 
 # 2. Frontend (separate terminal)
 cd client
@@ -65,6 +80,7 @@ API. See the comments in `Dockerfile`, `client/Dockerfile`, and
 ```bash
 npm run test:unit     # pure-logic tests, no database needed
 npm test              # unit + integration (needs PostgreSQL — see below)
+npm run test:hermetic # same suite against a throwaway Postgres in Docker (no local DB setup)
 ```
 
 Integration tests run real HTTP requests against a real Postgres database
@@ -90,8 +106,23 @@ to bet on immediately.
 
 ## Project Structure
 
+```
+server/      Express API (server/index.js) and background worker (server/worker.js)
+client/      React SPA; screens are grouped by role under client/src/routes/
+prisma/      Schema, migrations, seed, least-privilege DB roles
+tests/       unit, integration and hermetic (Testcontainers) suites
+scripts/     create-admin.js (first production admin), provision-db-roles.js
+infra/       Terraform for AWS, plus the state bootstrap
+loadtest/    k6 load-test scenarios
+docs/        Manuals, deployment, testing, runbooks, security review
+```
+
 See [docs/ENGINEER_MANUAL.md](docs/ENGINEER_MANUAL.md) section 2 for the
 full annotated folder structure.
+
+Deploying to production? The seed script won't run there. Create the first
+admin with `scripts/create-admin.js` instead (see
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
 
 ## Status
 
