@@ -1,9 +1,9 @@
 require('dotenv').config({ quiet: true });
-const { PrismaClient } = require('@prisma/client');
+const { createPrismaClient } = require('../server/utils/prismaClient');
 const bcrypt = require('bcryptjs');
 const walletService = require('../server/services/walletService');
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient(process.env.DATABASE_URL);
 
 async function upsertUserWithWallet({ role, fullName, phone, pin, walletType, staffRole }) {
   const passwordHash = await bcrypt.hash(pin, 10);

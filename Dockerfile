@@ -11,7 +11,8 @@
 # CLI, a devDependency, which the long-running images deliberately omit.
 
 FROM node:22-bookworm-slim AS base
-# Prisma's query engine links against OpenSSL, which the slim image lacks.
+# Prisma's schema engine (migrate) links against OpenSSL, which the slim
+# image lacks; ca-certificates is needed for TLS to RDS.
 RUN apt-get update \
   && apt-get install -y --no-install-recommends openssl ca-certificates \
   && rm -rf /var/lib/apt/lists/*
@@ -21,6 +22,8 @@ FROM base AS build
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY prisma ./prisma
+# Prisma 7 reads the schema path, migrations and seed command from here.
+COPY prisma.config.js ./
 RUN npx prisma generate
 
 # Runs `prisma migrate deploy` as the owner role in DATABASE_URL — a
@@ -28,7 +31,10 @@ RUN npx prisma generate
 # In ECS the command is overridden to also run
 # scripts/provision-db-roles.js (no psql in this image).
 FROM build AS migrate
+# The scripts and the seed build their Prisma client through
+# server/utils/prismaClient.js, and the seed also uses walletService.
 COPY scripts ./scripts
+COPY server ./server
 USER node
 CMD ["npx", "prisma", "migrate", "deploy"]
 

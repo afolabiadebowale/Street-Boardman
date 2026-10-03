@@ -1,6 +1,7 @@
-// Deliberately the first import: @prisma/client auto-loads the root .env
-// (the dev database). Before tests/setupEnv.js existed, importing it first
-// is exactly what sent several suites to the dev database.
+// Deliberately the first import: loading the root .env (the dev database)
+// before app config is exactly what sent several suites to the dev
+// database before tests/setupEnv.js existed (Prisma 5 did it on import).
+require('dotenv').config({ quiet: true });
 require('@prisma/client');
 
 const { assertTestDatabase } = require('../helpers/reset');

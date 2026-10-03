@@ -1,4 +1,4 @@
-const { Decimal } = require('@prisma/client/runtime/library');
+const { Decimal } = require('@prisma/client/runtime/client');
 
 function toDecimal(value) {
   return new Decimal(value);

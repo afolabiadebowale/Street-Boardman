@@ -55,6 +55,11 @@ jobs:
 
       - run: npm ci
 
+      # Prisma 7's client has no postinstall hook, so npm ci alone leaves
+      # it ungenerated.
+      - name: Generate Prisma client
+        run: npx prisma generate
+
       - name: Apply migrations
         run: npx prisma migrate deploy
 
