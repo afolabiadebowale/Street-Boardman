@@ -45,6 +45,7 @@ router.patch(
   adminController.resolveDispute
 );
 
+router.get('/payouts/float', requirePermission(PERMISSIONS.MANAGE_WITHDRAWALS), withdrawalController.adminPayoutFloat);
 router.patch(
   '/withdrawals/:id/process',
   requirePermission(PERMISSIONS.MANAGE_WITHDRAWALS),

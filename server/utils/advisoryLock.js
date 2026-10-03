@@ -18,8 +18,10 @@ const prisma = require('../config/db');
 // $transaction pins one connection for its whole duration, which is
 // exactly the affinity a transaction-scoped lock needs.
 //
-// `key` must be a stable 32-bit integer, distinct per job.
-async function withAdvisoryLock(key, fn) {
+// `key` must be a stable 32-bit integer, distinct per job. `timeout`
+// (ms) is for jobs that make network calls while holding the lock; the
+// transaction otherwise ends after Prisma's 5s default.
+async function withAdvisoryLock(key, fn, { timeout } = {}) {
   return prisma.$transaction(async (tx) => {
     const rows = await tx.$queryRaw`SELECT pg_try_advisory_xact_lock(${key}) AS acquired`;
     const acquired = rows[0]?.acquired === true;
@@ -28,7 +30,7 @@ async function withAdvisoryLock(key, fn) {
     }
     const result = await fn(tx);
     return { ran: true, result };
-  });
+  }, timeout ? { timeout } : undefined);
 }
 
 module.exports = { withAdvisoryLock };

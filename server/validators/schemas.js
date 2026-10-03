@@ -91,6 +91,8 @@ const withdrawalSchema = z.object({
     bankName: z.string().min(2),
     accountNumber: z.string().min(6),
     accountName: z.string().min(2),
+    // Paystack bank code (e.g. "058"); required in PRODUCTION (TASK-021).
+    bankCode: z.string().regex(/^\d{3,6}$/, 'Choose a valid bank').optional(),
   }),
 });
 
