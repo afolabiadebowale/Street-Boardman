@@ -204,7 +204,9 @@ Deposit
 
 Withdrawal
  - id, userId (FK), amount, destination (bank details JSON),
-   status [PENDING|APPROVED|PROCESSED|REJECTED], requestedAt, processedAt
+   status [PENDING|PROCESSING|PROCESSED|FAILED|REJECTED], requestedAt,
+   processedAt, transferReference (unique, Paystack idempotency key),
+   transferCode, transferInitiatedAt, failureReason
 
 Dispute
  - id, competitionId (FK), raisedByUserId (FK), reason,
@@ -345,8 +347,12 @@ Result CONFIRMED → Payout Engine runs (see §10)
    → WalletTransaction(COMMISSION) → Boardman Wallet balance += boardmanAmount
    → WalletTransaction(COMMISSION) → Platform Wallet balance += platformAmount
 Withdrawal requested
-   → funds held (Withdrawal.status = PENDING) until processed
-   → WalletTransaction(WITHDRAWAL) on success
+   → WalletTransaction(WITHDRAWAL): wallet debited, status PENDING
+Admin processes it
+   → PROCESSING (one atomic claim) → Paystack transfer, reference wd_<id>
+   → transfer.success webhook → PROCESSED
+   → transfer.failed / transfer.reversed → FAILED + WalletTransaction(ADJUSTMENT) refund
+   → no webhook after 15 min → worker asks Paystack by reference and settles
 ```
 
 Every wallet balance change happens **only** as a side effect of writing a

@@ -116,6 +116,12 @@ module.exports = {
     webhookSecret: process.env.PAYSTACK_WEBHOOK_SECRET || '',
   },
 
+  // Alert when the Paystack balance can't cover pending withdrawals plus
+  // this margin (TASK-024).
+  payouts: {
+    floatAlertNgn: Number(process.env.PAYOUT_FLOAT_ALERT_NGN || 50000),
+  },
+
   defaults: {
     boardmanCommissionRate: Number(process.env.DEFAULT_BOARDMAN_COMMISSION_RATE || 0.05),
     platformCommissionRate: Number(process.env.DEFAULT_PLATFORM_COMMISSION_RATE || 0.03),

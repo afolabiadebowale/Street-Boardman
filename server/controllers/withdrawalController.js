@@ -27,4 +27,14 @@ const adminRejectWithdrawal = asyncHandler(async (req, res) => {
   res.json({ withdrawal });
 });
 
-module.exports = { requestWithdrawal, listMyWithdrawals, adminProcessWithdrawal, adminRejectWithdrawal };
+const adminPayoutFloat = asyncHandler(async (req, res) => {
+  res.json({ float: await withdrawalService.checkPayoutFloat() });
+});
+
+module.exports = {
+  requestWithdrawal,
+  listMyWithdrawals,
+  adminProcessWithdrawal,
+  adminRejectWithdrawal,
+  adminPayoutFloat,
+};

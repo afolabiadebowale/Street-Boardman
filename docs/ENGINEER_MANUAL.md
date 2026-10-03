@@ -185,7 +185,8 @@ by `/auth/login` and the two `/auth/register/*` routes).
 | GET | `/admin/competitions` / `/admin/bets` | Full visibility |
 | GET | `/admin/disputes` | |
 | PATCH | `/admin/disputes/:id/resolve` | `{ action: 'CONFIRM'|'CANCEL', winningOptionId? }` — runs the payout or refund engine |
-| PATCH | `/admin/withdrawals/:id/process` \| `/reject` | |
+| PATCH | `/admin/withdrawals/:id/process` \| `/reject` | Process starts a Paystack transfer in PRODUCTION (settled by webhook); DEMO settles at once |
+| GET | `/admin/payouts/float` | Paystack balance vs pending withdrawals (FINANCE / SUPER_ADMIN) |
 | GET | `/admin/ledger` | Recent `WalletTransaction`s across all wallets |
 | GET | `/admin/audit-logs` | |
 | GET | `/admin/settings` / PATCH `/admin/settings` | Commission rates, confirmation window |
@@ -210,8 +211,10 @@ Result auto-confirmed or Admin-confirmed
         WalletTransaction(COMMISSION) -> Platform wallet
 Withdrawal requested
    -> WalletTransaction(WITHDRAWAL)      [wallet -= amount immediately, held as PENDING]
-Withdrawal rejected
+Withdrawal rejected (before any transfer)
    -> WalletTransaction(ADJUSTMENT)      [funds returned, with a reason note]
+Withdrawal transfer failed or reversed (Paystack webhook / worker sweep)
+   -> WalletTransaction(ADJUSTMENT)      [funds returned once, status FAILED]
 ```
 
 **Core invariant**: `wallet.balance` is only ever changed inside
@@ -313,6 +316,14 @@ See `.env.example` for the full annotated list. Highlights:
 - **Handling failed withdrawals**: use
   `withdrawalService.rejectWithdrawal` (not a direct DB edit) — it returns
   the held funds via a proper `ADJUSTMENT` transaction with an audit trail.
+  It only works on `PENDING` withdrawals. A `PROCESSING` one has a transfer
+  in flight at Paystack: never edit it by hand. The webhook or the worker's
+  10-minute sweep settles it (refunding automatically if it failed).
+- **Payout setup (PRODUCTION)**: in the Paystack dashboard, disable OTP for
+  transfers (otherwise transfers wait forever and an alert fires) and point
+  the webhook at `/api/deposits/paystack/webhook`, which handles both
+  deposits and `transfer.*` events. The hourly float check alerts when the
+  balance can't cover pending withdrawals plus `PAYOUT_FLOAT_ALERT_NGN`.
 - **Resolving disputes**: Admin -> Disputes screen, or directly via
   `resultService.resolveDispute` if scripting an emergency fix.
 - **Recovering from system errors**: because every money movement is a

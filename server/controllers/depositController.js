@@ -1,5 +1,6 @@
 const asyncHandler = require('../utils/asyncHandler');
 const depositService = require('../services/depositService');
+const withdrawalService = require('../services/withdrawalService');
 const AppError = require('../utils/appError');
 
 const createDemoDeposit = asyncHandler(async (req, res) => {
@@ -28,6 +29,9 @@ const paystackWebhook = asyncHandler(async (req, res) => {
       amount: event.data.amount,
       currency: event.data.currency,
     });
+  } else if (event.event?.startsWith('transfer.')) {
+    // One webhook URL per Paystack account, so payouts arrive here too.
+    await withdrawalService.handlePaystackTransferEvent(event.event, event.data);
   }
   res.sendStatus(200);
 });

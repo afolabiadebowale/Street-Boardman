@@ -92,10 +92,16 @@ enum DepositStatus {
   FAILED
 }
 
+// PENDING -> PROCESSING (transfer sent to Paystack, outcome not yet known)
+// -> PROCESSED (Paystack confirmed) or FAILED (failed/reversed; funds
+// returned to the wallet). REJECTED is an admin refusal before any
+// transfer was attempted (TASK-021).
 enum WithdrawalStatus {
   PENDING
   APPROVED
+  PROCESSING
   PROCESSED
+  FAILED
   REJECTED
 }
 
@@ -421,6 +427,12 @@ model Withdrawal {
   status       WithdrawalStatus @default(PENDING)
   requestedAt  DateTime         @default(now())
   processedAt  DateTime?
+  // Our idempotency key at Paystack: the same reference can never create a
+  // second transfer, which is what makes retrying an unknown outcome safe.
+  transferReference   String?   @unique
+  transferCode        String?
+  transferInitiatedAt DateTime?
+  failureReason       String?
 
   @@index([userId])
   @@index([status])
