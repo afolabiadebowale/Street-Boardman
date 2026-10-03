@@ -1,7 +1,9 @@
 // Integration tests run with NODE_ENV=test and load .env.test instead of
 // .env, so `npm test` never points at your everyday development database —
 // see docs/TESTING.md.
-require('dotenv').config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env' });
+// quiet: dotenv 17+ otherwise writes an unstructured "injected env" line
+// to stderr on every start, outside the pino log stream.
+require('dotenv').config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env', quiet: true });
 
 function required(name, fallback) {
   const value = process.env[name] ?? fallback;

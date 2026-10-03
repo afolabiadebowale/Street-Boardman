@@ -151,3 +151,23 @@ describe('config/env — cookie SameSite/Secure derivation (TASK-032)', () => {
     expect(loadEnv).toThrow(/COOKIE_SAME_SITE/);
   });
 });
+
+// dotenv 17+ logs "injected env (N) from .env" on every config() call
+// unless told not to. The API's output is a structured pino stream, so a
+// stray plain-text line on every start is noise in CloudWatch.
+describe('config/env — loading .env is silent', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.resetModules();
+  });
+
+  it('writes nothing to stdout or stderr', () => {
+    jest.resetModules();
+    const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const info = jest.spyOn(console, 'info').mockImplementation(() => {});
+    require('../../server/config/env');
+    for (const spy of [stderr, stdout, log, info]) expect(spy).not.toHaveBeenCalled();
+  });
+});

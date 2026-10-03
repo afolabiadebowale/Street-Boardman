@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const walletService = require('../server/services/walletService');
