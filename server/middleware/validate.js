@@ -7,7 +7,7 @@ function validate(schema) {
   return function (req, res, next) {
     const result = schema.safeParse(req.body);
     if (!result.success) {
-      const message = result.error.errors.map((e) => e.message).join(', ');
+      const message = result.error.issues.map((e) => e.message).join(', ');
       throw new AppError(message, 422);
     }
     req.body = result.data;

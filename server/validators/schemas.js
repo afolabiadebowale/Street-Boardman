@@ -1,5 +1,13 @@
 const { z } = require('zod');
 
+// zod 4 reports a missing field as "Invalid input: expected string,
+// received undefined". These messages go straight to users, so keep
+// zod 3's plain "Required" for that case; every other message is either
+// set per field below or zod's default.
+z.config({
+  customError: (issue) => (issue.input === undefined ? 'Required' : undefined),
+});
+
 const phone = z.string().min(10, 'Enter a valid phone number').max(15);
 const pin = z.string().min(4, 'PIN/password must be at least 4 characters');
 
@@ -32,8 +40,8 @@ const loginSchema = z.object({ phone, pin });
 // Role-specific rules (12+ for staff) are applied in staffSecurityService;
 // this only bounds the input.
 const changePasswordSchema = z.object({
-  currentPassword: z.string({ required_error: 'Enter your current password' }).min(1, 'Enter your current password'),
-  newPassword: z.string({ required_error: 'Enter a new password' }).min(4, 'Too short').max(128),
+  currentPassword: z.string({ error: 'Enter your current password' }).min(1, 'Enter your current password'),
+  newPassword: z.string({ error: 'Enter a new password' }).min(4, 'Too short').max(128),
 });
 
 const updateMeSchema = z.object({
@@ -77,7 +85,7 @@ const paystackInitializeSchema = z.object({ amount: z.number().positive() });
 const withdrawalSchema = z.object({
   amount: z.number().positive(),
   pin: z
-    .string({ required_error: 'Enter your PIN to confirm this withdrawal' })
+    .string({ error: 'Enter your PIN to confirm this withdrawal' })
     .min(1, 'Enter your PIN to confirm this withdrawal'),
   destination: z.object({
     bankName: z.string().min(2),

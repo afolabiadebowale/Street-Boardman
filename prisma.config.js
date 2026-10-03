@@ -5,7 +5,7 @@
 // (CI, docker compose, the hermetic suite) still wins, since dotenv never
 // overrides. process.env rather than prisma's env() keeps `prisma generate`
 // working in the Docker build, where no database URL exists.
-require('dotenv').config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env' });
+require('dotenv').config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env', quiet: true });
 const { defineConfig } = require('prisma/config');
 
 module.exports = defineConfig({
