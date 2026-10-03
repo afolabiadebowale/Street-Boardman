@@ -1,0 +1,73 @@
+# Public demo on a single VM (Oracle Cloud Always Free), layered on top of
+# docker-compose.yml. ops/init-env.sh writes COMPOSE_FILE into .env, so a
+# plain `docker compose ...` on the server always applies both files.
+#
+# What changes compared with the local stack, and why:
+# - Every secret is required (${VAR:?}). The base file's fallbacks are
+#   public in this repo; with this file a missing value stops compose
+#   instead of silently starting with a well-known secret.
+# - nginx is published on 127.0.0.1 only. Docker-published ports bypass
+#   the host's iptables INPUT rules, so a plain "8080:80" would be open to
+#   the internet. Caddy on the host is the only public listener.
+# - Caddy -> nginx -> API is two proxies, so TRUST_PROXY_HOPS is 2;
+#   with 1 every user would share Caddy's IP for rate limits and lockouts.
+# - CLIENT_ORIGIN is the public https origin, or the same-origin check
+#   rejects every POST from the browser.
+# - The staff security gate (MFA + 12-char password) is on from the start.
+# - Containers restart after crashes and reboots, and logs are capped so
+#   they can't fill the VM's disk.
+# APP_MODE stays DEMO (set in docker-compose.yml); no Paystack keys are
+# passed to any container.
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-app-env: &app-env
+  CLIENT_ORIGIN: https://${DEMO_DOMAIN:?set DEMO_DOMAIN in .env}
+  TRUST_PROXY_HOPS: 2
+  DATABASE_URL: postgresql://streetboardman_app:${COMPOSE_APP_DB_PASSWORD:?set in .env}@postgres:5432/streetboardman?schema=public
+  APP_DATABASE_URL: postgresql://streetboardman_app:${COMPOSE_APP_DB_PASSWORD:?set in .env}@postgres:5432/streetboardman?schema=public
+  JWT_ACCESS_SECRET: ${COMPOSE_JWT_ACCESS_SECRET:?set in .env}
+  JWT_REFRESH_SECRET: ${COMPOSE_JWT_REFRESH_SECRET:?set in .env}
+  JWT_MFA_CHALLENGE_SECRET: ${COMPOSE_JWT_MFA_SECRET:?set in .env}
+  STAFF_SECURITY_ENFORCED_FROM: ${COMPOSE_STAFF_SECURITY_ENFORCED_FROM:-2000-01-01}
+  SENTRY_ENVIRONMENT: oracle-demo
+
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${COMPOSE_DB_OWNER_PASSWORD:?set in .env}
+      APP_DB_PASSWORD: ${COMPOSE_APP_DB_PASSWORD:?set in .env}
+    restart: unless-stopped
+    logging: *logging
+
+  migrate:
+    environment:
+      DATABASE_URL: postgresql://postgres:${COMPOSE_DB_OWNER_PASSWORD:?set in .env}@postgres:5432/streetboardman?schema=public
+      # Read by `docker compose run --rm migrate npx prisma db seed`.
+      SEED_ADMIN_PHONE: ${SEED_ADMIN_PHONE:-08000000000}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?set in .env}
+      SEED_BOARDMAN_PHONE: ${SEED_BOARDMAN_PHONE:-08011111111}
+      SEED_BOARDMAN_PASSWORD: ${SEED_BOARDMAN_PASSWORD:?set in .env}
+      SEED_BETTER_PHONE: ${SEED_BETTER_PHONE:-08022222222}
+      SEED_BETTER_PASSWORD: ${SEED_BETTER_PASSWORD:?set in .env}
+    logging: *logging
+
+  api:
+    environment: *app-env
+    restart: unless-stopped
+    logging: *logging
+
+  worker:
+    environment: *app-env
+    restart: unless-stopped
+    logging: *logging
+
+  web:
+    ports: !override
+      - "127.0.0.1:8080:80"
+    restart: unless-stopped
+    logging: *logging

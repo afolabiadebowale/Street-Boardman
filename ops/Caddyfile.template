@@ -1,0 +1,16 @@
+# Installed as /etc/caddy/Caddyfile with DEMO_DOMAIN filled in:
+#   sed "s/DEMO_DOMAIN/$DOMAIN/" ops/Caddyfile.template | sudo tee /etc/caddy/Caddyfile
+# Caddy gets and renews the Let's Encrypt certificate itself and redirects
+# http to https. It sets X-Forwarded-For from the real client address
+# (ignoring any value the client sent), which is what makes
+# TRUST_PROXY_HOPS=2 safe.
+DEMO_DOMAIN {
+	encode gzip
+	reverse_proxy 127.0.0.1:8080
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
