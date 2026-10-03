@@ -2,7 +2,7 @@
 // the ECS migrate task runs this right after `prisma migrate deploy`
 // (TASK-034/039). Uses the owner connection in DATABASE_URL; sets the
 // least-privilege role's password from APP_DB_PASSWORD. Safe to re-run.
-const { PrismaClient } = require('@prisma/client');
+const { createPrismaClient } = require('../server/utils/prismaClient');
 
 async function provisionDbRoles(prisma, appPassword) {
   if (!appPassword) throw new Error('APP_DB_PASSWORD is required');
@@ -32,7 +32,7 @@ async function provisionDbRoles(prisma, appPassword) {
 module.exports = { provisionDbRoles };
 
 if (require.main === module) {
-  const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
+  const prisma = createPrismaClient(process.env.DATABASE_URL);
   provisionDbRoles(prisma, process.env.APP_DB_PASSWORD)
     .then(() => console.log('streetboardman_app role provisioned'))
     .catch((err) => {

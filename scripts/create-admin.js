@@ -7,7 +7,7 @@
 //
 // The new admin still has to turn on MFA at first login; the staff
 // security gate sends them straight to the page for it.
-const { PrismaClient } = require('@prisma/client');
+const { createPrismaClient } = require('../server/utils/prismaClient');
 const bcrypt = require('bcryptjs');
 
 const MIN_LENGTH = 12;
@@ -41,7 +41,7 @@ async function createAdmin(prisma, { phone, fullName, password }) {
 module.exports = { createAdmin };
 
 if (require.main === module) {
-  const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
+  const prisma = createPrismaClient(process.env.DATABASE_URL);
   createAdmin(prisma, { phone: process.env.ADMIN_PHONE, fullName: process.env.ADMIN_NAME, password: process.env.ADMIN_PASSWORD })
     .then((r) => console.log(`Created SUPER_ADMIN ${r.adminId}${r.createdPlatformWallet ? ' and the platform wallet' : ''}`))
     .catch((err) => {

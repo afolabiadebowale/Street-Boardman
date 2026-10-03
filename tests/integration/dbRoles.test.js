@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+const { createPrismaClient } = require('../../server/utils/prismaClient');
 const env = require('../../server/config/env');
 
 // TASK-034: the whole point of streetboardman_app is that it CANNOT run
@@ -16,7 +16,7 @@ describeIfConfigured('Least-privilege database role (TASK-034)', () => {
   let appClient;
 
   beforeAll(() => {
-    appClient = new PrismaClient({ datasources: { db: { url: env.appDatabaseUrl } } });
+    appClient = createPrismaClient(env.appDatabaseUrl);
   });
 
   afterAll(async () => {
