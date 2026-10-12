@@ -57,7 +57,7 @@ describe('reconciliationService (TASK-020)', () => {
 
     expect(report.pass).toBe(true);
     expect(report.wallets.mismatched).toBe(0);
-    expect(report.providerSettlement).toMatch(/not_yet_available/);
+    expect(report.providerSettlement).toMatchObject({ status: 'skipped' }); // DEMO: nothing at Paystack
     expect(logSpy).toHaveBeenCalledWith(expect.objectContaining({ event: 'daily_reconciliation', pass: true }), expect.any(String));
 
     logSpy.mockRestore();

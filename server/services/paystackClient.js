@@ -20,14 +20,19 @@ class PaystackError extends Error {
 }
 
 async function call(method, path, data) {
+  return (await callWithMeta(method, path, data)).data;
+}
+
+async function callWithMeta(method, path, data, params) {
   try {
     const response = await http.request({
       method,
       url: path,
       data,
+      params,
       headers: { Authorization: `Bearer ${env.paystack.secretKey}` },
     });
-    return response.data.data;
+    return { data: response.data.data, meta: response.data.meta };
   } catch (err) {
     const status = err.response?.status;
     const message = err.response?.data?.message || err.message;
@@ -73,7 +78,21 @@ async function getNgnBalanceKobo() {
   return ngn ? Number(ngn.balance) : 0;
 }
 
+// Paged lists for the settlement reconciliation (TASK-020): each returns
+// { data, meta: { page, pageCount, ... } }.
+function listTransactions({ from, to, page, perPage }) {
+  return callWithMeta('GET', '/transaction', undefined, {
+    status: 'success', from: from.toISOString(), to: to.toISOString(), page, perPage,
+  });
+}
+
+function listTransfers({ from, to, page, perPage }) {
+  return callWithMeta('GET', '/transfer', undefined, { from: from.toISOString(), to: to.toISOString(), page, perPage });
+}
+
 module.exports = {
+  listTransactions,
+  listTransfers,
   PaystackError,
   createTransferRecipient,
   initiateTransfer,

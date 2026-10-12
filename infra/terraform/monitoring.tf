@@ -45,7 +45,7 @@ locals {
   # threshold / evaluation periods (5-minute periods unless noted) / why
   log_alarms = {
     PayoutRetriesExhausted = { threshold = 1, periods = 1, missing = "notBreaching", what = "Winners are waiting on money: a payout failed 3 times and needs a human." }
-    ReconciliationMismatch = { threshold = 1, periods = 1, missing = "notBreaching", what = "A wallet balance disagrees with the double-entry ledger." }
+    ReconciliationMismatch = { threshold = 1, periods = 1, missing = "notBreaching", what = "Nightly reconciliation failed: a wallet disagrees with the ledger, or Paystack disagrees with our deposits/payouts." }
     SweepFailed            = { threshold = 3, periods = 3, missing = "notBreaching", what = "The worker sweep keeps failing: auto-confirm and payouts are stalled." }
     AccountLocked          = { threshold = 20, periods = 3, missing = "notBreaching", what = "Many accounts locked by failed logins: likely a credential-stuffing attack." }
     ApiErrors              = { threshold = 10, periods = 1, missing = "notBreaching", what = "Burst of unhandled API errors." }

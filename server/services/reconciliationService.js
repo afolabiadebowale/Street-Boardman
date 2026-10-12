@@ -2,14 +2,13 @@ const prisma = require('../config/db');
 const walletService = require('./walletService');
 const logger = require('../utils/logger');
 const errorTracking = require('../utils/errorTracking');
+const settlementService = require('./settlementService');
 
 // Checks every wallet's stored balance against what the ledger derives
 // (TASK-018's per-wallet check, run across all of them). This is the
-// "ledger vs wallet" half of TASK-020's reconciliation. The "vs provider
-// settlement" half is deliberately not implemented yet — there's no real
-// payment provider integration to reconcile against until EPIC-003 lands
-// (still DEMO mode); pretending to check something that doesn't exist
-// would be worse than being explicit that it's missing.
+// "ledger vs wallet" half of TASK-020's reconciliation; the "vs provider
+// settlement" half is settlementService (yesterday's Paystack charges and
+// transfers against our deposits and withdrawals).
 async function reconcileAllWallets() {
   const wallets = await prisma.wallet.findMany({ select: { id: true } });
   const results = await Promise.all(wallets.map((w) => walletService.reconcileWallet(prisma, w.id)));
@@ -26,7 +25,10 @@ async function reconcileAllWallets() {
 // same "log loudly so an operator watching logs notices" pattern used by
 // TASK-005's payout retry exhaustion, until real alerting is wired up.
 async function runDailyReconciliation() {
-  const walletReport = await reconcileAllWallets();
+  const [walletReport, settlement] = await Promise.all([
+    reconcileAllWallets(),
+    settlementService.reconcileSettlement(),
+  ]);
 
   const report = {
     event: 'daily_reconciliation',
@@ -35,8 +37,10 @@ async function runDailyReconciliation() {
       total: walletReport.totalWallets,
       mismatched: walletReport.mismatches.length,
     },
-    providerSettlement: 'not_yet_available — no real payment provider integration exists (EPIC-003)',
-    pass: walletReport.allMatch,
+    providerSettlement: settlement,
+    // Skipped (DEMO) is not a failure; a mismatch or an unreachable
+    // Paystack is.
+    pass: walletReport.allMatch && ['ok', 'skipped'].includes(settlement.status),
   };
 
   if (!walletReport.allMatch) {
@@ -55,6 +59,9 @@ async function runDailyReconciliation() {
       mismatched: walletReport.mismatches.length,
       walletIds: walletReport.mismatches.map((m) => m.walletId),
     });
+  } else if (!report.pass) {
+    // settlementService has already raised the alert with the details.
+    logger.error(report, 'Daily reconciliation: Paystack settlement check failed');
   } else {
     logger.info(report, 'Daily reconciliation passed');
   }

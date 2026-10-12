@@ -107,7 +107,7 @@ The CloudWatch dashboard (`terraform output dashboard_url`) and these alarms ema
 | Alarm | Fires when | First thing to check |
 |---|---|---|
 | PayoutRetriesExhausted | a payout failed 3 times | worker logs for the `competitionId`; winners are waiting |
-| ReconciliationMismatch | nightly wallet ≠ ledger | the mismatched `walletId`s in the worker log; treat as an incident |
+| ReconciliationMismatch | nightly wallet ≠ ledger, or Paystack ≠ our deposits/payouts (or Paystack unreachable) | worker log `daily_reconciliation`: mismatched `walletId`s, or `providerSettlement.problems` (credited without a charge, amount or status mismatch). Lost-webhook deposits are credited automatically and audited as `DEPOSIT_CREDITED_BY_RECONCILIATION`. Treat a mismatch as an incident |
 | WorkerHeartbeatMissing | no sweep ticks for 10 min | worker service events: crashed, or can't reach the DB |
 | SweepFailed | sweep errors 3 periods running | worker logs (`event: sweep_failed`) |
 | AccountLocked | ≥ 20 lockouts in 15 min | likely credential stuffing; consider `enable_waf` |
