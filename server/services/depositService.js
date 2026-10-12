@@ -116,10 +116,15 @@ async function handlePaystackChargeSuccess(reference, eventData = {}) {
       }
     }
 
-    const updated = await tx.deposit.update({
-      where: { id: deposit.id },
+    // Conditional claim, not find-then-update: a webhook retry and the
+    // settlement reconciliation can arrive together, and both would
+    // otherwise see PENDING and credit twice. The loser matches 0 rows.
+    const claim = await tx.deposit.updateMany({
+      where: { id: deposit.id, status: { not: 'SUCCESSFUL' } },
       data: { status: 'SUCCESSFUL', verifiedAt: new Date() },
     });
+    if (claim.count === 0) return tx.deposit.findUnique({ where: { id: deposit.id } });
+    const updated = await tx.deposit.findUnique({ where: { id: deposit.id } });
     const wallet = await walletService.getWalletByUserId(tx, deposit.userId);
     await walletService.applyWalletTransaction(tx, {
       walletId: wallet.id,
