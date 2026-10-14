@@ -11,4 +11,12 @@ export default defineConfig({
       '/api': 'http://localhost:4000',
     },
   },
+  // Vitest-only config (TASK-046). `vite dev`/`vite build` ignore this key
+  // entirely, so this adds a test runner without touching the dev/build
+  // pipeline above.
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/setupTests.js',
+  },
 });

@@ -1,7 +1,8 @@
 module.exports = {
-  // Server tests only. client/ has its own runner (Vitest); without this,
-  // the server's Jest also picked up client/**/*.test.jsx and failed on
-  // the JSX.
+  // Without this, Jest's default `roots: ['<rootDir>']` scans the whole
+  // repo, including client/src/**/*.test.jsx — which Vitest (not Jest)
+  // owns and Jest can't parse (no JSX transform configured here). Scoping
+  // to tests/ keeps server Jest and client Vitest from ever colliding.
   roots: ['<rootDir>/tests'],
   testEnvironment: 'node',
   testTimeout: 20000,
