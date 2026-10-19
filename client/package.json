@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@sentry/react": "^11.6.0",
+    "@sentry/react": "^11.7.0",
     "qrcode": "^1.5.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
