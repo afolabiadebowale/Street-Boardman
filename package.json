@@ -15,7 +15,8 @@
     "seed": "node prisma/seed.js",
     "test": "jest --runInBand",
     "test:hermetic": "jest --runInBand --config jest.hermetic.config.js",
-    "test:unit": "jest tests/unit"
+    "test:unit": "jest tests/unit",
+    "e2e": "playwright test --config=e2e/playwright.config.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
@@ -37,6 +38,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.0",
     "@testcontainers/postgresql": "^12.2.0",
     "fast-check": "^4.10.2",
     "jest": "^30.5.2",

@@ -10,6 +10,9 @@ uploads/
 .prisma-engines/
 loadtest/results/*
 !loadtest/results/.gitkeep
+test-results/
+playwright-report/
+blob-report/
 
 # Terraform local caches (the provider lock files ARE committed)
 .terraform/
