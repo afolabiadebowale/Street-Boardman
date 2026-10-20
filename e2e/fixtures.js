@@ -26,6 +26,14 @@ async function loginAs(page, { phone, pin }) {
   await page.locator('form input:not([type="password"])').fill(phone);
   await page.locator('form input[type="password"]').fill(pin);
   await page.getByRole('button', { name: 'Log In' }).click();
+  // Without this, a caller that does page.goto(...) right after loginAs()
+  // (switching users mid-test, e.g. e2e/dispute.spec.js) can race the
+  // in-flight /auth/login fetch — the browser aborts it on navigation,
+  // so the session cookie never gets set and every call after that one
+  // is silently still logged in as the PREVIOUS user. Specs that only
+  // assert toHaveURL() right after login never hit this, since that
+  // assertion's own polling absorbs the wait.
+  await page.waitForURL((url) => url.pathname !== '/login');
 }
 
 module.exports = { SEED_ACCOUNTS, loginAs };
