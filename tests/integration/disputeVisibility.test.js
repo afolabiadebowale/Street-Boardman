@@ -57,7 +57,7 @@ async function setupPendingConfirmationBet() {
   await boardmanAgent.patch(`/api/competitions/${competitionId}/close-betting`);
   await boardmanAgent.post(`/api/competitions/${competitionId}/result`).send({ winningOptionId: home.id });
 
-  return { competitionId, betCode: betRes.body.bet.betCode, bettor };
+  return { competitionId, betCode: betRes.body.bet.betCode, bettor, boardmanAgent };
 }
 
 beforeEach(async () => {
@@ -78,15 +78,43 @@ describe('GET /api/bets/:betCode — dispute visibility (FEAT-040)', () => {
     expect(res.body.bet.betOption.competition.disputes).toEqual([]);
   });
 
-  it("reflects the bettor's own dispute on their ticket once raised", async () => {
+  it("reflects the bettor's own dispute status, with no private fields", async () => {
     const { competitionId, betCode, bettor } = await setupPendingConfirmationBet();
 
     await bettor.post(`/api/competitions/${competitionId}/dispute`).send({ reason: 'This result looks wrong' });
     const res = await bettor.get(`/api/bets/${betCode}`);
 
-    expect(res.body.bet.betOption.competition.disputes).toHaveLength(1);
-    expect(res.body.bet.betOption.competition.disputes[0].status).toBe('OPEN');
-    expect(res.body.bet.betOption.competition.disputes[0].reason).toBe('This result looks wrong');
+    const dispute = res.body.bet.betOption.competition.disputes[0];
+    expect(dispute.status).toBe('OPEN');
+    expect(dispute.id).toBeDefined();
+    expect(dispute.createdAt).toBeDefined();
+    // reason is private to the disputing party and Admin (same boundary
+    // CompetitionManage.jsx already draws for the Boardman) — a Better's
+    // own ticket should never return it, raisedByUserId, or
+    // resolvedByAdminId, even for the dispute they themselves raised.
+    expect(dispute.reason).toBeUndefined();
+    expect(dispute.raisedByUserId).toBeUndefined();
+    expect(dispute.resolvedByAdminId).toBeUndefined();
+    expect(Object.keys(dispute).sort()).toEqual(['createdAt', 'id', 'resolvedAt', 'status']);
+  });
+
+  it("does not leak another stakeholder's dispute reason via a bettor's own ticket", async () => {
+    // The Boardman (a different stakeholder) raises the dispute this
+    // time — confirms the field-stripping isn't accidentally scoped to
+    // "only hide MY OWN reason" but genuinely never returns it to a Better,
+    // regardless of who wrote it.
+    const { competitionId, betCode, bettor, boardmanAgent } = await setupPendingConfirmationBet();
+
+    await boardmanAgent
+      .post(`/api/competitions/${competitionId}/dispute`)
+      .send({ reason: 'I submitted the wrong winner by mistake' });
+
+    const res = await bettor.get(`/api/bets/${betCode}`);
+    const dispute = res.body.bet.betOption.competition.disputes[0];
+
+    expect(dispute.status).toBe('OPEN');
+    expect(dispute.reason).toBeUndefined();
+    expect(dispute.raisedByUserId).toBeUndefined();
   });
 
   it("does not expose another better's ticket (ownership check still enforced)", async () => {
