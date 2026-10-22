@@ -28,7 +28,7 @@ function renderTicket(betCode = 'SB-000123') {
   );
 }
 
-function makeBet(competitionOverrides = {}) {
+function makeBet({ disputes = [], ...competitionOverrides } = {}) {
   return {
     betCode: 'SB-000123',
     stake: 5000,
@@ -40,6 +40,7 @@ function makeBet(competitionOverrides = {}) {
         id: 'comp-1',
         title: 'Alpha vs Bravo',
         status: 'BETTING_OPEN',
+        disputes,
         ...competitionOverrides,
       },
     },
@@ -79,7 +80,11 @@ describe('BetTicket', () => {
   it('submits a dispute and shows a confirmation banner', async () => {
     api.get
       .mockResolvedValueOnce({ bet: makeBet({ status: 'PENDING_CONFIRMATION' }) })
-      .mockResolvedValueOnce({ bet: makeBet({ status: 'DISPUTED' }) }); // reload() after raising it
+      // reload() after raising it — the server now reflects the dispute
+      // it just created, same as a real raiseDispute response would.
+      .mockResolvedValueOnce({
+        bet: makeBet({ status: 'DISPUTED', disputes: [{ id: 'dispute-1', status: 'OPEN' }] }),
+      });
     api.post.mockResolvedValueOnce({ dispute: { id: 'dispute-1' } });
     renderTicket();
 
@@ -96,6 +101,33 @@ describe('BetTicket', () => {
       reason: 'Alpha clearly won this match.',
     });
     expect(screen.queryByRole('button', { name: 'Report a Problem' })).not.toBeInTheDocument();
+  });
+
+  it('shows an existing dispute status on a fresh page load — not just right after submitting', async () => {
+    // Simulates the Better leaving and coming back later: the dispute
+    // comes straight from the first (and only) api.get call, with no
+    // local "just submitted" state involved.
+    api.get.mockResolvedValueOnce({
+      bet: makeBet({ status: 'DISPUTED', disputes: [{ id: 'dispute-1', status: 'UNDER_REVIEW' }] }),
+    });
+    renderTicket();
+
+    expect(
+      await screen.findByText('A Platform Admin is reviewing this dispute. Payouts stay frozen until they decide.')
+    ).toBeInTheDocument();
+    // Already disputed — reporting again isn't offered.
+    expect(screen.queryByRole('button', { name: 'Report a Problem' })).not.toBeInTheDocument();
+  });
+
+  it('shows the outcome once an Admin resolves the dispute', async () => {
+    api.get.mockResolvedValueOnce({
+      bet: makeBet({ status: 'RESULT_CONFIRMED', disputes: [{ id: 'dispute-1', status: 'RESOLVED_CONFIRMED' }] }),
+    });
+    renderTicket();
+
+    expect(
+      await screen.findByText('An Admin reviewed this dispute and confirmed the result — payouts have been processed.')
+    ).toBeInTheDocument();
   });
 
   it('shows an error and keeps the form visible if raising the dispute fails', async () => {

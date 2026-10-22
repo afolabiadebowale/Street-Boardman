@@ -4,12 +4,21 @@ import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
 
+// FEAT-040: a dispute's status comes from the server (bettingService.getBetByCode
+// now includes it), not local component state — so it's still visible here
+// if the Better raised it, navigated away, and comes back days later.
+const DISPUTE_STATUS_MESSAGE = {
+  OPEN: 'Dispute raised. Payouts are frozen until a Platform Admin reviews it.',
+  UNDER_REVIEW: 'A Platform Admin is reviewing this dispute. Payouts stay frozen until they decide.',
+  RESOLVED_CONFIRMED: 'An Admin reviewed this dispute and confirmed the result — payouts have been processed.',
+  RESOLVED_CANCELLED: 'An Admin reviewed this dispute and cancelled the competition — your stake was refunded.',
+};
+
 export default function BetTicket() {
   const { betCode } = useParams();
   const [bet, setBet] = useState(null);
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
-  const [disputeRaised, setDisputeRaised] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const load = () => api.get(`/bets/${betCode}`).then((d) => setBet(d.bet));
@@ -24,7 +33,6 @@ export default function BetTicket() {
     setSubmitting(true);
     try {
       await api.post(`/competitions/${bet.betOption.competition.id}/dispute`, { reason });
-      setDisputeRaised(true);
       load();
     } catch (err) {
       setError(err.message);
@@ -35,10 +43,12 @@ export default function BetTicket() {
 
   if (!bet) return <div className="page">Loading...</div>;
 
+  const dispute = bet.betOption.competition.disputes?.[0];
   // Matches resultService.raiseDispute: only possible while the Boardman's
   // submitted result is awaiting confirmation, same window the auto-confirm
-  // sweep respects (see docs/ARCHITECTURE.md section 10).
-  const canDispute = bet.betOption.competition.status === 'PENDING_CONFIRMATION';
+  // sweep respects (see docs/ARCHITECTURE.md section 10), and only while no
+  // dispute already exists on this competition.
+  const canDispute = bet.betOption.competition.status === 'PENDING_CONFIRMATION' && !dispute;
 
   return (
     <>
@@ -57,7 +67,7 @@ export default function BetTicket() {
           Your final winnings are confirmed once the result is settled.
         </p>
 
-        {canDispute && !disputeRaised && (
+        {canDispute && (
           <div className="card" style={{ marginTop: 12 }}>
             <h2>See a problem with this result?</h2>
             <p className="muted">
@@ -83,9 +93,9 @@ export default function BetTicket() {
             </form>
           </div>
         )}
-        {disputeRaised && (
+        {dispute && (
           <div className="success-banner" style={{ marginTop: 12 }}>
-            Dispute raised. Payouts are frozen until a Platform Admin reviews it.
+            {DISPUTE_STATUS_MESSAGE[dispute.status] || `Dispute status: ${dispute.status}`}
           </div>
         )}
 
