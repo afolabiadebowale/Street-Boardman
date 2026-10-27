@@ -28,4 +28,12 @@ async function get(key) {
   }
 }
 
-module.exports = { put, get };
+async function remove(key) {
+  try {
+    await fs.unlink(pathFor(key));
+  } catch (err) {
+    if (err.code !== 'ENOENT') throw err; // already gone is fine
+  }
+}
+
+module.exports = { put, get, remove };
