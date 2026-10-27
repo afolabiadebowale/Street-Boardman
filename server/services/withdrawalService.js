@@ -324,6 +324,7 @@ async function handlePaystackTransferEvent(eventType, data = {}) {
 }
 
 const STUCK_AFTER_MS = 15 * 60 * 1000;
+const STUCK_ALERT_MINUTES = 30;
 
 // Worker sweep: transfers still PROCESSING long after they were sent
 // (webhook lost, or the API call's outcome was unknown) are asked about by
@@ -339,6 +340,14 @@ async function confirmStuckTransfers({ now = new Date(), limit = 20 } = {}) {
     const found = await findTransfer(withdrawal.transferReference);
     if (found === null) await revertToPending(withdrawal.id, 'Transfer was never created at Paystack');
     else if (found) await applyProviderStatus(withdrawal.id, found.status, found.transfer_code);
+
+    // Still unresolved half an hour after sending: someone is waiting for
+    // their money. The PayoutTransferStuck alarm watches this event (A4).
+    const after = await prisma.withdrawal.findUnique({ where: { id: withdrawal.id }, select: { status: true } });
+    const minutes = Math.round((now - withdrawal.transferInitiatedAt) / 60000);
+    if (after.status === 'PROCESSING' && minutes >= STUCK_ALERT_MINUTES) {
+      logger.warn({ event: 'payout_transfer_stuck', withdrawalId: withdrawal.id, minutes }, 'Payout transfer still unresolved');
+    }
   }
   return { checked: stuck.length };
 }

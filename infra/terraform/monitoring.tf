@@ -25,6 +25,12 @@ locals {
     WorkerHeartbeat        = { group = "worker", pattern = "{ $.event = \"sweep_tick\" }" }
     AccountLocked          = { group = "api", pattern = "{ $.event = \"account_locked\" }" }
     ApiErrors              = { group = "api", pattern = "{ $.level >= 50 }" }
+    # Money-out and messaging (A4).
+    PayoutTransferStuck = { group = "worker", pattern = "{ $.event = \"payout_transfer_stuck\" }" }
+    PayoutFloatLow      = { group = "worker", pattern = "{ $.event = \"payout_float_low\" }" }
+    LostWebhookDeposits = { group = "worker", pattern = "{ $.event = \"settlement_deposits_healed\" }" }
+    NotificationGaveUp  = { group = "worker", pattern = "{ ($.event = \"notification_send_failed\") && ($.givingUp IS TRUE) }" }
+    SmsSendFailures     = { group = "worker", pattern = "{ $.event = \"notification_send_failed\" }" }
   }
 }
 
@@ -49,6 +55,11 @@ locals {
     SweepFailed            = { threshold = 3, periods = 3, missing = "notBreaching", what = "The worker sweep keeps failing: auto-confirm and payouts are stalled." }
     AccountLocked          = { threshold = 20, periods = 3, missing = "notBreaching", what = "Many accounts locked by failed logins: likely a credential-stuffing attack." }
     ApiErrors              = { threshold = 10, periods = 1, missing = "notBreaching", what = "Burst of unhandled API errors." }
+    PayoutTransferStuck    = { threshold = 1, periods = 1, missing = "notBreaching", what = "A withdrawal transfer is still unresolved 30+ minutes after sending: someone is waiting for their money." }
+    PayoutFloatLow         = { threshold = 1, periods = 1, missing = "notBreaching", what = "The Paystack balance can't cover pending withdrawals plus the margin: top up before payouts start failing." }
+    LostWebhookDeposits    = { threshold = 1, periods = 1, missing = "notBreaching", what = "Nightly reconciliation credited deposits whose Paystack webhook never arrived: check the webhook URL and secret." }
+    NotificationGaveUp     = { threshold = 1, periods = 1, missing = "notBreaching", what = "A user notification failed 5 times and was dropped." }
+    SmsSendFailures        = { threshold = 20, periods = 1, missing = "notBreaching", what = "Many SMS sends failing at once: Termii is down, out of credit, or the key is wrong." }
   }
 }
 
@@ -159,7 +170,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         type = "metric", x = 0, y = 0, width = 12, height = 6
         properties = {
           title   = "Money and safety events", region = var.region, stat = "Sum", period = 300
-          metrics = [for m in ["PayoutRetriesExhausted", "ReconciliationMismatch", "SweepFailed", "AccountLocked"] : [local.metric_namespace, m]]
+          metrics = [for m in ["PayoutRetriesExhausted", "ReconciliationMismatch", "SweepFailed", "AccountLocked", "PayoutTransferStuck", "PayoutFloatLow", "NotificationGaveUp", "SmsSendFailures"] : [local.metric_namespace, m]]
         }
       },
       {
