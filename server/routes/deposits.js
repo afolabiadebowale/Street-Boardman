@@ -3,6 +3,7 @@ const requireAuth = require('../middleware/auth');
 const requireRole = require('../middleware/requireRole');
 const validate = require('../middleware/validate');
 const requireConsent = require('../middleware/requireConsent');
+const requirePlayAllowed = require('../middleware/requirePlayAllowed');
 const depositController = require('../controllers/depositController');
 const { demoDepositSchema, paystackInitializeSchema } = require('../validators/schemas');
 
@@ -11,8 +12,8 @@ const { demoDepositSchema, paystackInitializeSchema } = require('../validators/s
 // verification) instead of the parsed JSON body every other route gets.
 
 router.use(requireAuth);
-router.post('/demo', requireRole('BETTER', 'BOARDMAN'), requireConsent, validate(demoDepositSchema), depositController.createDemoDeposit);
-router.post('/paystack/initialize', requireRole('BETTER'), requireConsent, validate(paystackInitializeSchema), depositController.initializePaystack);
+router.post('/demo', requireRole('BETTER', 'BOARDMAN'), requirePlayAllowed, requireConsent, validate(demoDepositSchema), depositController.createDemoDeposit);
+router.post('/paystack/initialize', requireRole('BETTER'), requirePlayAllowed, requireConsent, validate(paystackInitializeSchema), depositController.initializePaystack);
 router.get('/me', depositController.listMyDeposits);
 
 module.exports = router;

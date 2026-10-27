@@ -41,6 +41,19 @@ const registerBoardmanSchema = z.object({
   acceptPolicies,
 });
 
+// Responsible gambling (A2). amount null removes the limit.
+const setGamblingLimitSchema = z.object({
+  kind: z.enum(['DEPOSIT', 'STAKE']),
+  period: z.enum(['DAY', 'WEEK', 'MONTH']),
+  amount: z.number().positive().max(100_000_000).nullable(),
+});
+
+// Exclusion can't be undone, so the client must send confirm: true.
+const selfExclusionSchema = z.object({
+  period: z.enum(['7d', '30d', '6m', 'permanent']),
+  confirm: z.literal(true, { error: 'Confirm that you understand this cannot be undone' }),
+});
+
 const acceptPoliciesSchema = z.object({
   TERMS: z.string().min(1),
   PRIVACY: z.string().min(1),
@@ -192,6 +205,8 @@ module.exports = {
   registerBoardmanSchema,
   acceptPoliciesSchema,
   deleteAccountSchema,
+  setGamblingLimitSchema,
+  selfExclusionSchema,
   loginSchema,
   updateMeSchema,
   changePasswordSchema,

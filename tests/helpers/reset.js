@@ -26,6 +26,7 @@ async function resetDatabase() {
   await prisma.otpCode.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.consentRecord.deleteMany();
+  await prisma.gamblingLimit.deleteMany();
   await prisma.upload.deleteMany();
   await prisma.kycVerification.deleteMany();
   await prisma.auditLog.deleteMany();

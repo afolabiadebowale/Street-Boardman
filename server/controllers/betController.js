@@ -16,6 +16,7 @@ const placeBet = asyncHandler(async (req, res) => {
     betOptionId: req.body.betOptionId,
     stake: req.body.stake,
     idempotencyKey,
+    hasGamblingLimits: req.user.hasGamblingLimits,
   });
   if (replayed) res.set('Idempotent-Replayed', 'true');
   res.status(replayed ? 200 : 201).json({ bet });

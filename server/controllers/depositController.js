@@ -4,7 +4,7 @@ const withdrawalService = require('../services/withdrawalService');
 const AppError = require('../utils/appError');
 
 const createDemoDeposit = asyncHandler(async (req, res) => {
-  const deposit = await depositService.createDemoDeposit(req.user.id, req.body.amount);
+  const deposit = await depositService.createDemoDeposit(req.user.id, req.body.amount, { hasGamblingLimits: req.user.hasGamblingLimits });
   res.status(201).json({ deposit });
 });
 
