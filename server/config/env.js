@@ -126,7 +126,10 @@ module.exports = {
   // Where uploaded evidence photos are stored (FEAT-042). In Docker this
   // is a volume, so photos survive container rebuilds.
   uploads: {
+    driver: process.env.UPLOAD_STORAGE === 's3' ? 's3' : 'local',
     dir: process.env.UPLOAD_DIR || require('path').join(process.cwd(), 'uploads'),
+    s3Bucket: process.env.UPLOAD_S3_BUCKET || '',
+    s3Region: process.env.AWS_REGION || 'af-south-1',
   },
 
   // SMS through Termii (FEAT-014/041). Without a key, DEMO logs messages
