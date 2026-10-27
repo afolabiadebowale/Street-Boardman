@@ -186,6 +186,11 @@ function userIdFromSessionCookies(req) {
 // logged out (ASVS 3.3.1). Bumping tokenVersion revokes it server-side.
 // This signs out every device for the account, which for a money app is
 // the safer default.
+function clearSessionCookies(res) {
+  res.clearCookie(COOKIE_NAMES.ACCESS, cookieOptions);
+  res.clearCookie(COOKIE_NAMES.REFRESH, cookieOptions);
+}
+
 const logout = asyncHandler(async (req, res) => {
   const userId = userIdFromSessionCookies(req);
   if (userId) {
@@ -242,4 +247,5 @@ module.exports = {
   logout,
   refresh,
   toPublicUser,
+  clearSessionCookies,
 };

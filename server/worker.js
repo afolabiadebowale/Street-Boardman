@@ -14,6 +14,7 @@ errorTracking.initErrorTracking();
 const startAutoConfirmSweep = require('./jobs/autoConfirmSweep');
 const startReconciliationSweep = require('./jobs/reconciliationSweep');
 const startPayoutSweep = require('./jobs/payoutSweep');
+const startRetentionSweep = require('./jobs/retentionSweep');
 
 const prisma = require('./config/db');
 const logger = require('./utils/logger');
@@ -22,6 +23,7 @@ logger.info('StreetBoardman worker process starting');
 startAutoConfirmSweep();
 startReconciliationSweep();
 startPayoutSweep();
+startRetentionSweep();
 
 // Exiting mid-sweep is safe: each sweep runs inside a transaction holding
 // its advisory lock, and payouts are idempotent per bet (TASK-006), so an

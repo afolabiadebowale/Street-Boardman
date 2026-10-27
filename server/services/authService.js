@@ -1,4 +1,5 @@
 const prisma = require('../config/db');
+const consentService = require('./consentService');
 const AppError = require('../utils/appError');
 const password = require('../utils/password');
 const walletService = require('./walletService');
@@ -8,7 +9,7 @@ const logger = require('../utils/logger');
 const staffSecurity = require('./staffSecurityService');
 const { recordAuditLog } = require('../middleware/auditLog');
 
-async function registerBetter({ fullName, phone, pin }, fingerprint) {
+async function registerBetter({ fullName, phone, pin, acceptPolicies }, fingerprint) {
   const existing = await prisma.user.findUnique({ where: { phone } });
   if (existing) throw new AppError('An account with this phone number already exists', 409);
 
@@ -19,11 +20,12 @@ async function registerBetter({ fullName, phone, pin }, fingerprint) {
     });
     await walletService.createWalletForUser(tx, user.id, 'BETTER', true);
     await deviceService.flagIfDeviceReused(tx, { newUserId: user.id, fingerprint });
+    if (acceptPolicies) await consentService.recordConsent(tx, user.id);
     return user;
   });
 }
 
-async function registerBoardman({ fullName, phone, pin, businessLocation, kycDocumentUrl }, fingerprint) {
+async function registerBoardman({ fullName, phone, pin, businessLocation, kycDocumentUrl, acceptPolicies }, fingerprint) {
   const existing = await prisma.user.findUnique({ where: { phone } });
   if (existing) throw new AppError('An account with this phone number already exists', 409);
 
@@ -37,6 +39,7 @@ async function registerBoardman({ fullName, phone, pin, businessLocation, kycDoc
     });
     await walletService.createWalletForUser(tx, user.id, 'BOARDMAN', true);
     await deviceService.flagIfDeviceReused(tx, { newUserId: user.id, fingerprint });
+    if (acceptPolicies) await consentService.recordConsent(tx, user.id);
     return user;
   });
 }

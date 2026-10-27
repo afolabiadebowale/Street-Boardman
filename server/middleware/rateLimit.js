@@ -72,4 +72,12 @@ const uploadLimiter = perUserLimiter({
   message: 'Too many uploads. Try again in an hour.',
 });
 
-module.exports = { uploadLimiter, authLimiter, bettingLimiter, apiLimiter, kycLimiter, withdrawalLimiter, mfaManageLimiter };
+// A full data export is a heavy query and a lot of personal data in one
+// response (FEAT-060).
+const exportLimiter = perUserLimiter({
+  windowMs: 24 * 60 * 60 * 1000,
+  max: 3,
+  message: 'You can download your data 3 times a day.',
+});
+
+module.exports = { exportLimiter, uploadLimiter, authLimiter, bettingLimiter, apiLimiter, kycLimiter, withdrawalLimiter, mfaManageLimiter };
