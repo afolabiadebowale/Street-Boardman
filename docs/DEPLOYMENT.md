@@ -118,6 +118,11 @@ The CloudWatch dashboard (`terraform output dashboard_url`) and these alarms ema
 | SweepFailed | sweep errors 3 periods running | worker logs (`event: sweep_failed`) |
 | AccountLocked | ≥ 20 lockouts in 15 min | likely credential stuffing; consider `enable_waf` |
 | ApiErrors / Api5xx | bursts of unhandled errors | API logs or Sentry, by `requestId` |
+| PayoutTransferStuck | a withdrawal still unresolved 30+ min after sending | worker log `payout_transfer_stuck` for the `withdrawalId`; check the transfer in the Paystack dashboard. Never edit a `PROCESSING` withdrawal by hand |
+| PayoutFloatLow | Paystack balance < pending withdrawals + `PAYOUT_FLOAT_ALERT_NGN` | top up the Paystack balance; `GET /api/admin/payouts/float` shows the numbers |
+| LostWebhookDeposits | reconciliation credited deposits whose webhook never came | Paystack dashboard: webhook URL `/api/deposits/paystack/webhook` and secret |
+| NotificationGaveUp | a notification failed 5 times | worker log `notification_send_failed`; the `lastError` on the `Notification` row |
+| SmsSendFailures | 20+ SMS failures in 5 min | Termii status, credit balance, `TERMII_API_KEY` |
 | ApiUnhealthy | an API task failing health checks | ECS service events |
 | ApiLatencyP95 | p95 > 1 s for 15 min | DB CPU and lock waits (see docs/LOAD_TESTING.md) |
 | DbCpu / DbStorage / DbConnections | database under pressure | Performance Insights in the RDS console |

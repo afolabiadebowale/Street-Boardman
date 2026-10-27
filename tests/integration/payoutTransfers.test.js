@@ -196,6 +196,27 @@ describe('Paystack payouts (TASK-021)', () => {
     expect(await statusOf(never.withdrawal.id)).toBe('PENDING');
   });
 
+  it('raises the stuck-transfer alert for one still pending at Paystack after 30 minutes, not for one that settles', async () => {
+    const logger = require('../../server/utils/logger');
+    const warn = jest.spyOn(logger, 'warn');
+    const pending = await setup();
+    const settles = await setup();
+    await withdrawalService.processWithdrawal(pending.withdrawal.id, pending.admin.id);
+    await withdrawalService.processWithdrawal(settles.withdrawal.id, settles.admin.id);
+    paystack.verifyTransfer.mockImplementation(async (reference) =>
+      reference === `wd_${settles.withdrawal.id}` ? { status: 'success', transfer_code: 'TRF_ok' } : { status: 'pending' }
+    );
+
+    await withdrawalService.confirmStuckTransfers({ now: new Date(Date.now() + 20 * 60 * 1000) });
+    expect(warn.mock.calls.filter(([f]) => f.event === 'payout_transfer_stuck')).toHaveLength(0); // only 20 min
+
+    await withdrawalService.confirmStuckTransfers({ now: new Date(Date.now() + 31 * 60 * 1000) });
+    const alerts = warn.mock.calls.filter(([f]) => f.event === 'payout_transfer_stuck');
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0][0]).toMatchObject({ withdrawalId: pending.withdrawal.id });
+    warn.mockRestore();
+  });
+
   it('ignores webhooks with an amount that does not match, and ones for unknown references', async () => {
     const { withdrawal, admin } = await setup();
     await withdrawalService.processWithdrawal(withdrawal.id, admin.id);
