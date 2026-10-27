@@ -94,6 +94,31 @@ async function readEvidence(id) {
 
 const evidencePath = (id) => `/api/uploads/evidence/${id}`;
 
+const ABANDONED_AFTER_DAYS = 7;
+const PURGE_BATCH = 500;
+
+// Photos uploaded but never attached to a result within a week (A5): the
+// result was never submitted, or other photos were used. They'd otherwise
+// fill the server's disk forever. The row is deleted first, conditionally
+// on still being unattached, and only then the file: if a result attaches
+// the photo at the same moment, exactly one of the two wins, and a result
+// can never point at a deleted file.
+async function purgeAbandoned({ now = new Date() } = {}) {
+  const cutoff = new Date(now.getTime() - ABANDONED_AFTER_DAYS * 24 * 3600 * 1000);
+  const candidates = await prisma.upload.findMany({
+    where: { attachedToResultId: null, createdAt: { lt: cutoff } },
+    take: PURGE_BATCH,
+  });
+  let purged = 0;
+  for (const upload of candidates) {
+    const claim = await prisma.upload.deleteMany({ where: { id: upload.id, attachedToResultId: null } });
+    if (claim.count === 0) continue; // attached meanwhile: keep it
+    await storage.remove(`${upload.id}.${upload.contentType === 'image/png' ? 'png' : 'jpg'}`);
+    purged += 1;
+  }
+  return { purged };
+}
+
 // Inside the result's transaction: the uploads must be the Boardman's own
 // and not already used; claiming them is a conditional update, so two
 // results can't share a photo.
@@ -110,4 +135,4 @@ async function attachToResult(tx, uploadIds, ownerUserId, resultId) {
   return unique.map(evidencePath);
 }
 
-module.exports = { saveEvidence, readEvidence, attachToResult, evidencePath, detectType, stripJpeg, stripPng, MAX_BYTES };
+module.exports = { purgeAbandoned, ABANDONED_AFTER_DAYS, saveEvidence, readEvidence, attachToResult, evidencePath, detectType, stripJpeg, stripPng, MAX_BYTES };
