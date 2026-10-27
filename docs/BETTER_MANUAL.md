@@ -140,6 +140,14 @@ You'll see the outcome reflected on your bet's status once it's resolved.
 - If you think your account has been compromised, contact support
   immediately so it can be suspended.
 
+## 13a. Your Data and Privacy
+
+The buttons for these arrive in the next app update; until then, ask support.
+
+- **Download your data:** you can get a file with everything we hold about you: profile, wallet history, bets, deposits, withdrawals, identity-check results and notifications.
+- **Delete your account:** you can delete your account, confirming with your PIN. Withdraw your balance first and let any open bets settle. Your name, phone number and other personal details are removed and you're signed out everywhere. Records of past payments and bets are kept, without your name, because the law requires us to keep financial records.
+- **Terms and privacy policy:** when they change, you'll be asked to accept the new version before your next bet or deposit.
+
 ## 14. Frequently Asked Questions
 
 **Is this real money?**

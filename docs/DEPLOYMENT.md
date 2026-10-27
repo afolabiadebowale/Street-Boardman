@@ -91,6 +91,8 @@ aws secretsmanager put-secret-value --secret-id streetboardman-prod/paystack-web
 
 **Evidence photos** are stored on the API container's disk at `UPLOAD_DIR` (default `/app/uploads`; a named volume in `docker-compose.yml`). That suits one server. Back up the volume alongside the database. On AWS (several API tasks, no shared disk) it needs S3 behind the same `services/storage` interface before uploads are used.
 
+**Data protection (FEAT-060).** Policy versions live in `server/config/constants.js` (`POLICY_VERSIONS`); bumping one asks every user to accept again. `REQUIRE_POLICY_CONSENT=true` blocks betting and deposits until they have; leave it `false` until the client's sign-up and re-consent screens send consent. The worker deletes expired login codes after 7 days and delivered notifications after 180 days (03:30 daily). Deleted accounts are anonymised, not removed: bets, deposits, withdrawals and the ledger are financial records kept for audit and AML.
+
 **Rotating a secret.** It's manual on purpose: automatic rotation would sign every user out at random times.
 - *JWT secrets:* taint and re-apply, then redeploy. Everyone is signed out and logs in again. Do it at a quiet hour and after any suspected leak.
   `terraform apply -var-file=envs/prod.tfvars -replace='random_password.jwt["access"]'` (and/or `refresh`, `mfa-challenge`)

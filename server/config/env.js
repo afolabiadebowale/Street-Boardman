@@ -116,6 +116,13 @@ module.exports = {
     webhookSecret: process.env.PAYSTACK_WEBHOOK_SECRET || '',
   },
 
+  // FEAT-060: when true, betting and deposits require the current terms and
+  // privacy policy to have been accepted. Off until the client's sign-up
+  // and re-consent screens send it, so turning this on can't lock users out.
+  privacy: {
+    requireConsent: process.env.REQUIRE_POLICY_CONSENT === 'true',
+  },
+
   // Where uploaded evidence photos are stored (FEAT-042). In Docker this
   // is a volume, so photos survive container rebuilds.
   uploads: {

@@ -164,6 +164,9 @@ model User {
   // admin actions until it's changed.
   mustChangePassword Boolean   @default(false)
   passwordChangedAt  DateTime?
+  // Set when the user deleted their account (NDPA erasure): personal
+  // details are anonymised, financial records are kept for audit/AML.
+  deletedAt          DateTime?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
@@ -177,6 +180,7 @@ model User {
   commissionsEarned Commission[]
   kycVerifications KycVerification[]
   notifications        Notification[]
+  consents             ConsentRecord[]
   uploads              Upload[]
   adjustmentsRequested WalletAdjustment[] @relation("AdjustmentRequestedBy")
   adjustmentsReviewed  WalletAdjustment[] @relation("AdjustmentReviewedBy")
@@ -636,4 +640,18 @@ model Upload {
   createdAt          DateTime @default(now())
 
   @@index([ownerUserId])
+}
+
+// Which version of the terms / privacy policy each user accepted, and
+// when (NDPA: consent must be demonstrable). Rows are never updated: a new
+// policy version means a new row.
+model ConsentRecord {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  document   String
+  version    String
+  acceptedAt DateTime @default(now())
+
+  @@unique([userId, document, version])
 }

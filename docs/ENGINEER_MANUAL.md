@@ -146,6 +146,10 @@ by `/auth/login` and the two `/auth/register/*` routes).
 |---|---|---|---|
 | GET | `/users/me` | any | Returns user + boardmanProfile if applicable |
 | PATCH | `/users/me` | any | Update fullName/email |
+| GET | `/users/me/consent` | any | Current policy versions, what the user accepted, `required` |
+| POST | `/users/me/consent` | any | `{ TERMS, PRIVACY }` must equal the current versions (else 409); recorded, audited |
+| GET | `/users/me/export` | any | Download of everything held about the user (NDPA access request), 3/day. Excludes secrets, the BVN/NIN hash and fraud signals |
+| POST | `/users/me/delete` | BETTER/BOARDMAN | `{ pin, confirm: 'DELETE' }`. Refused (409) with a balance, open bets, a pending withdrawal/deposit or a live competition. Anonymises personal details, keeps financial records, ends all sessions |
 | GET | `/wallet/me` | any | Current balance |
 | GET | `/wallet/me/transactions` | any | Full ledger for this user |
 

@@ -21,10 +21,15 @@ const httpsUrl = z
   .url()
   .refine((value) => value.startsWith('https://'), 'Links must start with https://');
 
+// Ticking "I accept the terms and privacy policy" (FEAT-060). Optional
+// until the sign-up form sends it; see REQUIRE_POLICY_CONSENT.
+const acceptPolicies = z.literal(true).optional();
+
 const registerBetterSchema = z.object({
   fullName: z.string().min(2, 'Full name is required'),
   phone,
   pin,
+  acceptPolicies,
 });
 
 const registerBoardmanSchema = z.object({
@@ -33,6 +38,18 @@ const registerBoardmanSchema = z.object({
   pin,
   businessLocation: z.string().min(2, 'Location is required'),
   kycDocumentUrl: httpsUrl.optional(),
+  acceptPolicies,
+});
+
+const acceptPoliciesSchema = z.object({
+  TERMS: z.string().min(1),
+  PRIVACY: z.string().min(1),
+});
+
+// Typing DELETE as well as the PIN: erasure can't be undone.
+const deleteAccountSchema = z.object({
+  pin: z.string().min(1, 'Enter your PIN'),
+  confirm: z.literal('DELETE', { error: 'Type DELETE to confirm' }),
 });
 
 const loginSchema = z.object({ phone, pin });
@@ -173,6 +190,8 @@ const updateSettingsSchema = z.object({
 module.exports = {
   registerBetterSchema,
   registerBoardmanSchema,
+  acceptPoliciesSchema,
+  deleteAccountSchema,
   loginSchema,
   updateMeSchema,
   changePasswordSchema,

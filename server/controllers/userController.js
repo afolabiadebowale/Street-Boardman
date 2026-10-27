@@ -3,13 +3,17 @@ const prisma = require('../config/db');
 const { toPublicUser } = require('./authController');
 const kycService = require('../services/kycService');
 const { recordAuditLog } = require('../middleware/auditLog');
+const consentService = require('../services/consentService');
+const privacyService = require('../services/privacyService');
+const { clearSessionCookies } = require('./authController');
 
 const getMe = asyncHandler(async (req, res) => {
   let boardmanProfile = null;
   if (req.user.role === 'BOARDMAN') {
     boardmanProfile = await prisma.boardmanProfile.findUnique({ where: { userId: req.user.id } });
   }
-  res.json({ user: toPublicUser(req.user), boardmanProfile });
+  const consent = await consentService.consentStatus(req.user.id);
+  res.json({ user: toPublicUser(req.user), boardmanProfile, consentRequired: consent.required });
 });
 
 // Name changes are audited: the insider-betting check (TASK-014) compares
@@ -45,4 +49,30 @@ const verifyKyc = asyncHandler(async (req, res) => {
   res.status(201).json(result);
 });
 
-module.exports = { getMe, updateMe, verifyKyc };
+const getConsent = asyncHandler(async (req, res) => {
+  res.json(await consentService.consentStatus(req.user.id));
+});
+
+const acceptPolicies = asyncHandler(async (req, res) => {
+  res.json(await consentService.acceptCurrentPolicies(req.user.id, req.body));
+});
+
+// Everything we hold about the caller, as a JSON download (NDPA access).
+const exportMyData = asyncHandler(async (req, res) => {
+  const data = await privacyService.exportUserData(req.user.id);
+  await recordAuditLog({ actorUserId: req.user.id, action: 'PERSONAL_DATA_EXPORTED', entityType: 'User', entityId: req.user.id });
+  res.set('Content-Disposition', `attachment; filename="streetboardman-my-data-${new Date().toISOString().slice(0, 10)}.json"`);
+  res.json(data);
+});
+
+const deleteMe = asyncHandler(async (req, res) => {
+  await privacyService.deleteAccount(req.user.id, req.body.pin);
+  clearSessionCookies(res);
+  res.json({ deleted: true });
+});
+
+module.exports = {
+  getConsent,
+  acceptPolicies,
+  exportMyData,
+  deleteMe, getMe, updateMe, verifyKyc };
