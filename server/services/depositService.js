@@ -4,6 +4,7 @@ const prisma = require('../config/db');
 const AppError = require('../utils/appError');
 const env = require('../config/env');
 const walletService = require('./walletService');
+const responsibleGambling = require('./responsibleGamblingService');
 const { toDecimal, round2 } = require('../utils/money');
 
 // DEMO MODE: instantly credits the wallet with fake money. No real payment
@@ -12,14 +13,16 @@ const { toDecimal, round2 } = require('../utils/money');
 //
 // Blocked outright in PRODUCTION: without this guard, anyone could mint
 // fake balance via this endpoint and withdraw it as real money (TASK-001).
-async function createDemoDeposit(userId, amount) {
+async function createDemoDeposit(userId, amount, { hasGamblingLimits = true } = {}) {
   if (env.appMode !== 'DEMO') {
     throw new AppError('Demo deposits are disabled — this app is running in PRODUCTION mode', 403);
   }
   const amountDecimal = round2(toDecimal(amount));
   if (amountDecimal.lte(0)) throw new AppError('Deposit amount must be positive', 422);
+  const depositLimits = await responsibleGambling.loadLimits({ id: userId, hasGamblingLimits }, 'DEPOSIT');
 
   return prisma.$transaction(async (tx) => {
+    await responsibleGambling.enforceLimits(tx, userId, 'DEPOSIT', amountDecimal, depositLimits);
     const deposit = await tx.deposit.create({
       data: { userId, amount: amountDecimal, provider: 'DEMO', status: 'SUCCESSFUL', verifiedAt: new Date() },
     });
@@ -48,8 +51,14 @@ async function initializePaystackDeposit(user, amount) {
   const amountDecimal = round2(toDecimal(amount));
   if (amountDecimal.lte(0)) throw new AppError('Deposit amount must be positive', 422);
 
-  const deposit = await prisma.deposit.create({
-    data: { userId: user.id, amount: amountDecimal, provider: 'PAYSTACK', status: 'PENDING' },
+  // The limit is checked when the payment is opened: once Paystack has
+  // taken the money, the deposit has to be credited.
+  const depositLimits = await responsibleGambling.loadLimits(user, 'DEPOSIT');
+  const deposit = await prisma.$transaction(async (tx) => {
+    await responsibleGambling.enforceLimits(tx, user.id, 'DEPOSIT', amountDecimal, depositLimits);
+    return tx.deposit.create({
+      data: { userId: user.id, amount: amountDecimal, provider: 'PAYSTACK', status: 'PENDING' },
+    });
   });
 
   const response = await axios.post(

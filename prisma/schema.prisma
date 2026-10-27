@@ -167,6 +167,15 @@ model User {
   // Set when the user deleted their account (NDPA erasure): personal
   // details are anonymised, financial records are kept for audit/AML.
   deletedAt          DateTime?
+  // Responsible gambling (A2). Exclusion and cooling-off can only be
+  // extended, never shortened, by the user or by staff.
+  selfExcludedUntil     DateTime?
+  selfExcludedPermanent Boolean   @default(false)
+  coolingOffUntil       DateTime?
+  // Set once the user has any limit, so the bet and deposit paths only
+  // look limits up for users who have them (the hot path stays one query
+  // shorter for everyone else).
+  hasGamblingLimits     Boolean   @default(false)
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
@@ -181,6 +190,7 @@ model User {
   kycVerifications KycVerification[]
   notifications        Notification[]
   consents             ConsentRecord[]
+  gamblingLimits       GamblingLimit[]
   uploads              Upload[]
   adjustmentsRequested WalletAdjustment[] @relation("AdjustmentRequestedBy")
   adjustmentsReviewed  WalletAdjustment[] @relation("AdjustmentReviewedBy")
@@ -654,4 +664,33 @@ model ConsentRecord {
   acceptedAt DateTime @default(now())
 
   @@unique([userId, document, version])
+}
+
+// A user's own deposit / stake limits (responsible gambling). Lowering
+// applies at once; raising or removing is queued in pending* and takes
+// effect 24 hours later, so a limit can't be lifted in the heat of the
+// moment. amount NULL = no limit.
+enum GamblingLimitKind {
+  DEPOSIT
+  STAKE
+}
+
+enum GamblingLimitPeriod {
+  DAY
+  WEEK
+  MONTH
+}
+
+model GamblingLimit {
+  id                 String              @id @default(cuid())
+  userId             String
+  user               User                @relation(fields: [userId], references: [id])
+  kind               GamblingLimitKind
+  period             GamblingLimitPeriod
+  amount             Decimal?            @db.Decimal(14, 2)
+  pendingAmount      Decimal?            @db.Decimal(14, 2)
+  pendingEffectiveAt DateTime?
+  updatedAt          DateTime            @updatedAt
+
+  @@unique([userId, kind, period])
 }

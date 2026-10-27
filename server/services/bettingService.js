@@ -1,6 +1,7 @@
 const prisma = require('../config/db');
 const AppError = require('../utils/appError');
 const walletService = require('./walletService');
+const responsibleGambling = require('./responsibleGamblingService');
 const { addStake, totalsFor, withOptionTotals } = require('./optionTotals');
 const { generateBetCode } = require('../utils/idGenerator');
 const { toDecimal, round2 } = require('../utils/money');
@@ -61,7 +62,7 @@ async function flagIfSelfBettingSuspected(tx, { betId, betterId, boardmanProfile
 // the API restarted mid-request: seen in the FEAT-054 failure drill)
 // returns the bet that was already placed, marked `replayed`, instead of
 // placing and charging a second one.
-async function placeBet({ betterId, betOptionId, stake, idempotencyKey }) {
+async function placeBet({ betterId, betOptionId, stake, idempotencyKey, hasGamblingLimits = true }) {
   const stakeDecimal = round2(toDecimal(stake));
   if (stakeDecimal.lte(0) || stakeDecimal.lt(MIN_STAKE)) {
     throw new AppError(`Minimum stake is ₦${MIN_STAKE}`, 422);
@@ -100,8 +101,9 @@ async function placeBet({ betterId, betOptionId, stake, idempotencyKey }) {
       .times(stakeDecimal.dividedBy(optionAfter))
   );
 
+  const stakeLimits = await responsibleGambling.loadLimits({ id: betterId, hasGamblingLimits }, 'STAKE');
   try {
-    return await placeBetTransaction({ betterId, betOptionId, stakeDecimal, idempotencyKey, competition, betOption, estimatedPayout });
+    return await placeBetTransaction({ betterId, betOptionId, stakeDecimal, idempotencyKey, competition, betOption, estimatedPayout, stakeLimits });
   } catch (err) {
     // Two requests with the same key raced: the unique constraint let one
     // through and aborted this one. Return the winner's bet.
@@ -126,8 +128,9 @@ async function findByIdempotencyKey(betterId, idempotencyKey, { betOptionId, sta
   return { ...earlier, replayed: true };
 }
 
-async function placeBetTransaction({ betterId, betOptionId, stakeDecimal, idempotencyKey, competition, betOption, estimatedPayout }) {
+async function placeBetTransaction({ betterId, betOptionId, stakeDecimal, idempotencyKey, competition, betOption, estimatedPayout, stakeLimits }) {
   return prisma.$transaction(async (tx) => {
+    await responsibleGambling.enforceLimits(tx, betterId, 'STAKE', stakeDecimal, stakeLimits);
     const betCode = await generateBetCode(tx);
     const wallet = await walletService.getWalletByUserId(tx, betterId);
 

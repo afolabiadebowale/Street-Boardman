@@ -5,6 +5,7 @@ const kycService = require('../services/kycService');
 const { recordAuditLog } = require('../middleware/auditLog');
 const consentService = require('../services/consentService');
 const privacyService = require('../services/privacyService');
+const responsibleGambling = require('../services/responsibleGamblingService');
 const { clearSessionCookies } = require('./authController');
 
 const getMe = asyncHandler(async (req, res) => {
@@ -71,7 +72,27 @@ const deleteMe = asyncHandler(async (req, res) => {
   res.json({ deleted: true });
 });
 
+const getGamblingControls = asyncHandler(async (req, res) => {
+  res.json(await responsibleGambling.getControls(req.user));
+});
+
+const setGamblingLimit = asyncHandler(async (req, res) => {
+  res.json({ limit: await responsibleGambling.setLimit(req.user.id, req.body) });
+});
+
+const selfExclude = asyncHandler(async (req, res) => {
+  res.json({ selfExclusion: await responsibleGambling.selfExclude(req.user.id, req.body.period) });
+});
+
+const coolOff = asyncHandler(async (req, res) => {
+  res.json({ coolingOff: await responsibleGambling.coolOff(req.user.id) });
+});
+
 module.exports = {
+  getGamblingControls,
+  setGamblingLimit,
+  selfExclude,
+  coolOff,
   getConsent,
   acceptPolicies,
   exportMyData,

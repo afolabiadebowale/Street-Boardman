@@ -16,6 +16,9 @@ const STAFF_VISIBLE_USER_FIELDS = {
   phoneVerifiedAt: true,
   mfaEnabledAt: true,
   lockedUntil: true,
+  selfExcludedUntil: true,
+  selfExcludedPermanent: true,
+  coolingOffUntil: true,
   createdAt: true,
 };
 

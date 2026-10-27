@@ -146,6 +146,10 @@ by `/auth/login` and the two `/auth/register/*` routes).
 |---|---|---|---|
 | GET | `/users/me` | any | Returns user + boardmanProfile if applicable |
 | PATCH | `/users/me` | any | Update fullName/email |
+| GET | `/users/me/gambling-controls` | BETTER | Limits in force (+ queued raises and amount used in the window), self-exclusion, cooling-off |
+| PUT | `/users/me/limits` | BETTER | `{ kind: DEPOSIT\|STAKE, period: DAY\|WEEK\|MONTH, amount\|null }`. Rolling windows (24 h / 7 d / 30 d). Lowering applies now; raising or removing waits 24 h |
+| POST | `/users/me/self-exclusion` | BETTER | `{ period: 7d\|30d\|6m\|permanent, confirm: true }`. Extend-only; no staff override. Blocks bets and deposits (403 `SELF_EXCLUDED`), not login or withdrawals |
+| POST | `/users/me/cooling-off` | BETTER | 24-hour break from bets and deposits (403 `COOLING_OFF`); can't be restarted mid-break |
 | GET | `/users/me/consent` | any | Current policy versions, what the user accepted, `required` |
 | POST | `/users/me/consent` | any | `{ TERMS, PRIVACY }` must equal the current versions (else 409); recorded, audited |
 | GET | `/users/me/export` | any | Download of everything held about the user (NDPA access request), 3/day. Excludes secrets, the BVN/NIN hash and fraud signals |

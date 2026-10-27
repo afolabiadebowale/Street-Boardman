@@ -140,6 +140,16 @@ You'll see the outcome reflected on your bet's status once it's resolved.
 - If you think your account has been compromised, contact support
   immediately so it can be suspended.
 
+## 12a. Staying in Control
+
+Betting should stay fun. You can set these for yourself (the buttons arrive in the next app update; until then, ask support):
+
+- **Limits** on how much you deposit or stake per day, week or month. Counted over the last 24 hours / 7 days / 30 days. A lower limit applies straight away; a higher limit, or removing one, takes effect 24 hours later, so you can't lift it on impulse.
+- **Take a 24-hour break** from betting and deposits.
+- **Self-exclusion** for 7 days, 30 days, 6 months or permanently. It can't be shortened or cancelled, by you or by us. While it's on you can't bet or deposit, but you can still log in and withdraw your balance.
+
+If betting stops feeling like fun, please use these, and talk to someone you trust.
+
 ## 13a. Your Data and Privacy
 
 The buttons for these arrive in the next app update; until then, ask support.

@@ -23,6 +23,7 @@ describe('depositService.createDemoDeposit — APP_MODE gating (TASK-001)', () =
       paystack: { secretKey: '', publicKey: '', webhookSecret: '' },
     }));
     jest.doMock('../../server/config/db', () => ({
+      gamblingLimit: { findMany: jest.fn().mockResolvedValue([]) }, // no deposit limits set
       $transaction: jest.fn((cb) =>
         cb({
           deposit: { create: jest.fn().mockResolvedValue({ id: 'dep-1' }) },
