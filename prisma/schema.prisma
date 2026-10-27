@@ -392,6 +392,10 @@ model Bet {
   // this bet instead of placing (and charging) a second one. Unique per
   // bettor; bets placed without a key are unaffected (NULLs never clash).
   idempotencyKey   String?
+  // Random token behind a shareable ticket link (A3). Bet codes are
+  // sequential, so the public check page uses this instead: knowing one
+  // ticket must not let anyone walk through everyone else's.
+  shareToken       String?     @unique
 
   payout Payout?
 

@@ -32,4 +32,14 @@ const getTicket = asyncHandler(async (req, res) => {
   res.json({ bet });
 });
 
-module.exports = { placeBet, listMyBets, getTicket };
+const shareTicket = asyncHandler(async (req, res) => {
+  res.json(await bettingService.shareTicket(req.params.betCode, req.user.id));
+});
+
+const getSharedTicket = asyncHandler(async (req, res) => {
+  res.json({ ticket: await bettingService.getSharedTicket(req.params.token) });
+});
+
+module.exports = {
+  shareTicket,
+  getSharedTicket, placeBet, listMyBets, getTicket };

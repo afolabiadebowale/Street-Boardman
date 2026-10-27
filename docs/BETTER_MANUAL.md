@@ -140,6 +140,13 @@ You'll see the outcome reflected on your bet's status once it's resolved.
 - If you think your account has been compromised, contact support
   immediately so it can be suspended.
 
+## 11a. Statements and Sharing a Ticket
+
+- **Monthly statement:** a spreadsheet (CSV) of every payment in and out for a month, with your opening and closing balance.
+- **Share a ticket:** get a link to one of your bets to show a friend. The link shows the bet and how it ended, never your name or number. Only someone with the link can see it.
+
+(The buttons for both arrive in the next app update.)
+
 ## 12a. Staying in Control
 
 Betting should stay fun. You can set these for yourself (the buttons arrive in the next app update; until then, ask support):

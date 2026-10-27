@@ -11,6 +11,7 @@ router.use('/competitions', require('./competitions'));
 router.use('/bets', require('./bets'));
 router.use('/notifications', require('./notifications'));
 router.use('/uploads', require('./uploads'));
+router.use('/tickets', require('./tickets'));
 router.use('/admin', require('./admin'));
 
 module.exports = router;
