@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const prisma = require('../config/db');
 const AppError = require('../utils/appError');
-const storage = require('./storage/localDisk');
+const storage = require('./storage');
 
 // Result evidence photos (FEAT-042). Uploads are hostile input until
 // proven otherwise:
@@ -73,7 +73,7 @@ async function saveEvidence(userId, body) {
 
   const clean = ext === 'jpg' ? stripJpeg(buffer) : stripPng(buffer);
   const id = crypto.randomUUID();
-  await storage.put(`${id}.${ext}`, clean);
+  await storage.put(`${id}.${ext}`, clean, { contentType: TYPES[ext].contentType });
   return prisma.upload.create({
     data: { id, ownerUserId: userId, purpose: 'RESULT_EVIDENCE', contentType: TYPES[ext].contentType, sizeBytes: clean.length },
   });

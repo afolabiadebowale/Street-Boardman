@@ -93,6 +93,10 @@ locals {
       { name = "LOG_LEVEL", value = "info" },
       { name = "SENTRY_DSN", value = var.sentry_dsn },
       { name = "SENTRY_ENVIRONMENT", value = var.environment },
+      # Evidence photos in S3 (uploads.tf): tasks share no disk.
+      { name = "UPLOAD_STORAGE", value = "s3" },
+      { name = "UPLOAD_S3_BUCKET", value = aws_s3_bucket.uploads.bucket },
+      { name = "AWS_REGION", value = var.region },
     ],
     var.staff_security_enforced_from == null ? [] : [
       { name = "STAFF_SECURITY_ENFORCED_FROM", value = var.staff_security_enforced_from },
