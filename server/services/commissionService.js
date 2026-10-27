@@ -24,12 +24,22 @@ function calculateCommission(totalStakePool, boardmanRate, platformRate) {
 // payouts never exceed the pool; the leftover, under one kobo per winner,
 // goes to the platform (see payoutService). Found by property tests,
 // TASK-045.
+//
+// Multiply first, then divide, at 50 significant digits rounding down.
+// Dividing first (stake / total) at decimal.js's default 20 digits could
+// land a hair below an exact share (0.02 / 0.13 truncated, times the pool,
+// gave 55445.7799... for an exact 55445.78), and flooring then
+// short-changed the winner a kobo. Pool x stake fits easily in 50 digits,
+// so the product is exact and only the final division truncates.
+const Exact = Decimal.clone({ precision: 50, rounding: Decimal.ROUND_DOWN });
+
 function calculateWinnerPayouts(winningBets, winningOptionTotalStaked, distributablePool) {
-  const optionTotal = toDecimal(winningOptionTotalStaked);
+  const optionTotal = new Exact(String(winningOptionTotalStaked));
   if (optionTotal.lte(0)) return [];
+  const pool = new Exact(String(distributablePool));
   return winningBets.map((bet) => {
-    const share = toDecimal(bet.stake).dividedBy(optionTotal);
-    const amount = toDecimal(distributablePool).times(share).toDecimalPlaces(2, Decimal.ROUND_DOWN);
+    const exact = pool.times(String(bet.stake)).dividedBy(optionTotal);
+    const amount = toDecimal(exact.toDecimalPlaces(2, Decimal.ROUND_DOWN).toString());
     return { betId: bet.id, amount };
   });
 }

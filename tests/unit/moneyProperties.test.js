@@ -84,6 +84,18 @@ describe('commission and payout math — properties (TASK-045)', () => {
     );
   });
 
+  it('regression: a winner is paid their exact share, not a kobo short, when stake / total is a recurring decimal', () => {
+    // Found by the property above (rare, a few runs in a thousand): dividing
+    // first at 20 significant digits made 360397.57 x 0.02/0.13 come out
+    // as 55445.7799..., floored to 55445.77 instead of the exact 55445.78.
+    const payouts = calculateWinnerPayouts(
+      [{ id: 'a', stake: toDecimal('0.02') }, { id: 'b', stake: toDecimal('0.11') }],
+      toDecimal('0.13'),
+      toDecimal('360397.57')
+    );
+    expect(payouts.map((p) => p.amount.toString())).toEqual(['55445.78', '304951.79']);
+  });
+
   it('regression: three equal winners splitting ₦0.02 are not paid ₦0.03 in total', () => {
     // Found by the property above: with half-up rounding each got ₦0.01,
     // and the platform's share went to -₦0.01 to cover it.
