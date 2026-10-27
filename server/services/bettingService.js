@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const prisma = require('../config/db');
 const AppError = require('../utils/appError');
 const walletService = require('./walletService');
@@ -205,4 +206,40 @@ async function getBetByCode(betCode, betterId) {
   return bet;
 }
 
-module.exports = { placeBet, listBetsForBetter, getBetByCode, MIN_STAKE };
+// Shareable ticket (A3). The owner asks for a link; the token is random
+// and created once (a conditional update, so two clicks agree on one).
+async function shareTicket(betCode, betterId) {
+  const bet = await getBetByCode(betCode, betterId);
+  if (!bet.shareToken) {
+    await prisma.bet.updateMany({
+      where: { id: bet.id, shareToken: null },
+      data: { shareToken: crypto.randomBytes(16).toString('base64url') },
+    });
+  }
+  const { shareToken } = await prisma.bet.findUnique({ where: { id: bet.id }, select: { shareToken: true } });
+  return { shareToken, path: `/tickets/${shareToken}` };
+}
+
+// Public check of a shared ticket: what was bet and how it ended, never
+// who placed it.
+async function getSharedTicket(shareToken) {
+  if (!/^[A-Za-z0-9_-]{22}$/.test(String(shareToken))) throw new AppError('Ticket not found', 404);
+  const bet = await prisma.bet.findUnique({
+    where: { shareToken },
+    include: { betOption: { include: { competition: { include: { result: { include: { winningOption: true } } } } } } },
+  });
+  if (!bet) throw new AppError('Ticket not found', 404);
+  const { competition } = bet.betOption;
+  return {
+    betCode: bet.betCode,
+    status: bet.status,
+    stake: bet.stake,
+    potentialPayout: bet.potentialPayout,
+    placedAt: bet.placedAt,
+    option: bet.betOption.label,
+    competition: { title: competition.title, category: competition.category, status: competition.status },
+    winningOption: competition.result && competition.result.status === 'CONFIRMED' ? competition.result.winningOption.label : null,
+  };
+}
+
+module.exports = { placeBet, listBetsForBetter, getBetByCode, shareTicket, getSharedTicket, MIN_STAKE };

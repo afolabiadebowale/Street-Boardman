@@ -12,5 +12,6 @@ router.use(requireAuth, requireRole('BETTER'));
 router.post('/', bettingLimiter, requirePlayAllowed, requireConsent, validate(placeBetSchema), betController.placeBet);
 router.get('/me', betController.listMyBets);
 router.get('/:betCode', betController.getTicket);
+router.post('/:betCode/share', betController.shareTicket);
 
 module.exports = router;

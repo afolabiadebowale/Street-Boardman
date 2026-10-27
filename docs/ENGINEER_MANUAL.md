@@ -156,6 +156,7 @@ by `/auth/login` and the two `/auth/register/*` routes).
 | POST | `/users/me/delete` | BETTER/BOARDMAN | `{ pin, confirm: 'DELETE' }`. Refused (409) with a balance, open bets, a pending withdrawal/deposit or a live competition. Anonymises personal details, keeps financial records, ends all sessions |
 | GET | `/wallet/me` | any | Current balance |
 | GET | `/wallet/me/transactions` | any | Full ledger for this user |
+| GET | `/wallet/me/statement?month=YYYY-MM` | any | Monthly statement CSV (Lagos time): opening balance, every movement, closing balance |
 
 ### Deposits / Withdrawals
 | Method | Path | Auth | Notes |
@@ -189,6 +190,8 @@ by `/auth/login` and the two `/auth/register/*` routes).
 | POST | `/bets` | BETTER | `{ betOptionId, stake }`, rate-limited. Optional `Idempotency-Key` header (8–64 chars, one per bet slip): a retry returns the original bet with 200 and `Idempotent-Replayed: true` |
 | GET | `/bets/me` | BETTER | Own bet history |
 | GET | `/bets/:betCode` | BETTER, owner | One ticket |
+| POST | `/bets/:betCode/share` | BETTER, owner | Returns `{ shareToken, path: /tickets/<token> }`; one random token per bet |
+| GET | `/tickets/:token` | none | Public view of a shared ticket: bet, competition, status, outcome once confirmed. Never who placed it. Bet codes are sequential, so only the random token works here |
 
 ### Admin (all require `role: ADMIN`)
 

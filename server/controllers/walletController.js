@@ -1,4 +1,5 @@
 const asyncHandler = require('../utils/asyncHandler');
+const statementService = require('../services/statementService');
 const prisma = require('../config/db');
 const walletService = require('../services/walletService');
 
@@ -21,4 +22,12 @@ const getMyTransactions = asyncHandler(async (req, res) => {
   res.json({ transactions });
 });
 
-module.exports = { getMyWallet, getMyTransactions };
+const getMyStatement = asyncHandler(async (req, res) => {
+  const month = String(req.query.month || '');
+  const { csv } = await statementService.monthlyStatement(req.user.id, month);
+  res.set('Content-Type', 'text/csv; charset=utf-8');
+  res.set('Content-Disposition', `attachment; filename="streetboardman-statement-${month}.csv"`);
+  res.send(csv);
+});
+
+module.exports = { getMyWallet, getMyTransactions, getMyStatement };
