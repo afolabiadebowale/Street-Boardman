@@ -39,22 +39,36 @@ export default function CompetitionDetail() {
       <div className="page">
         <p className="muted">{competition.category} · Betting closes {new Date(competition.bettingDeadline).toLocaleString()}</p>
         {competition.description && <p>{competition.description}</p>}
+        {competition.boardman && (
+          <p className="muted">
+            Run by {competition.boardman.name} · {competition.boardman.location}
+            {competition.boardman.trustScore != null && <span className="trust-badge" style={{ marginLeft: 6 }}>Trust {competition.boardman.trustScore}</span>}
+          </p>
+        )}
+        <p className="muted">Pool so far: ₦{Number(competition.pool.totalPool).toLocaleString()}</p>
+        {competition.pool.notices.map((n) => (
+          <div key={n.code} className="notice-banner">{n.message}</div>
+        ))}
 
         <h2>Choose your bet</h2>
         {error && <div className="error-banner">{error}</div>}
         <form onSubmit={onPlaceBet}>
-          {competition.betOptions.map((opt) => (
-            <label key={opt.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-              <input
-                type="radio"
-                name="option"
-                value={opt.id}
-                checked={selectedOptionId === opt.id}
-                onChange={() => setSelectedOptionId(opt.id)}
-              />
-              <span>{opt.label}</span>
-            </label>
-          ))}
+          {competition.betOptions.map((opt) => {
+            const odds = competition.pool.options.find((o) => o.id === opt.id);
+            return (
+              <label key={opt.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="option"
+                  value={opt.id}
+                  checked={selectedOptionId === opt.id}
+                  onChange={() => setSelectedOptionId(opt.id)}
+                />
+                <span style={{ flex: 1 }}>{opt.label}</span>
+                {odds?.payoutPer100 && <span className="muted">₦100 → ₦{odds.payoutPer100}</span>}
+              </label>
+            );
+          })}
 
           <div className="field" style={{ marginTop: 16 }}>
             <label>Stake (₦)</label>
