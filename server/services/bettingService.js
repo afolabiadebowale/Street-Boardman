@@ -200,7 +200,31 @@ async function listBetsForBetter(betterId) {
 async function getBetByCode(betCode, betterId) {
   const bet = await prisma.bet.findUnique({
     where: { betCode },
-    include: { betOption: { include: { competition: true } } },
+    // The latest dispute (if any) on this competition, so a Better who
+    // raised one — or whose bet is affected by one someone else raised —
+    // can see where it stands any time they revisit the ticket, not just
+    // in the one-time confirmation shown right after submitting it
+    // (FEAT-040). Deliberately a `select`, not `include`: `reason`,
+    // `raisedByUserId`, and `resolvedByAdminId` are private to the
+    // disputing party and Admin (same boundary CompetitionManage.jsx
+    // already draws for the Boardman — see docs/BETTER_MANUAL.md section
+    // 12, "you'll see the OUTCOME", not the reason). A Better only ever
+    // needs the status and timestamps to know where things stand.
+    include: {
+      betOption: {
+        include: {
+          competition: {
+            include: {
+              disputes: {
+                select: { id: true, status: true, createdAt: true, resolvedAt: true },
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+              },
+            },
+          },
+        },
+      },
+    },
   });
   if (!bet || bet.betterId !== betterId) throw new AppError('Bet ticket not found', 404);
   return bet;
