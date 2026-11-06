@@ -12,13 +12,21 @@ export default function CompetitionDetail() {
   const [stake, setStake] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  // FEAT-037: the form never submits straight to the API. Reviewing shows a
+  // confirmation summary; only confirming it places the bet, so a misclick
+  // on the stake field or the wrong radio can't cost a Better money.
+  const [reviewing, setReviewing] = useState(false);
 
   const load = () => api.get(`/competitions/${id}`).then((d) => setCompetition(d.competition));
 
   useEffect(() => { load(); }, [id]);
 
-  const onPlaceBet = async (e) => {
+  const onReview = (e) => {
     e.preventDefault();
+    setReviewing(true);
+  };
+
+  const onConfirm = async () => {
     setError('');
     setSubmitting(true);
     try {
@@ -26,12 +34,47 @@ export default function CompetitionDetail() {
       navigate(`/better/my-bets/${bet.betCode}`);
     } catch (err) {
       setError(err.message);
+      setReviewing(false);
     } finally {
       setSubmitting(false);
     }
   };
 
   if (!competition) return <div className="page">Loading...</div>;
+
+  const selectedOption = competition.betOptions.find((o) => o.id === selectedOptionId);
+  const selectedOdds = competition.pool.options.find((o) => o.id === selectedOptionId);
+  const estimatedPayout = selectedOdds?.payoutPer100 && stake
+    ? ((Number(selectedOdds.payoutPer100) * Number(stake)) / 100).toFixed(2)
+    : null;
+
+  if (reviewing) {
+    return (
+      <>
+        <TopBar title={competition.title} />
+        <div className="page">
+          <h2>Confirm your bet</h2>
+          {error && <div className="error-banner">{error}</div>}
+          <div className="card">
+            <p className="ticket-row"><span>Competition</span><span>{competition.title}</span></p>
+            <p className="ticket-row"><span>Your pick</span><span>{selectedOption?.label}</span></p>
+            <p className="ticket-row"><span>Stake</span><span>₦{Number(stake).toLocaleString()}</span></p>
+            {estimatedPayout && (
+              <p className="ticket-row"><span>Estimated payout</span><span>₦{Number(estimatedPayout).toLocaleString()}</span></p>
+            )}
+          </div>
+          <p className="muted">Estimate only — the final payout depends on the pool when betting closes.</p>
+          <button className="btn btn-primary" type="button" onClick={onConfirm} disabled={submitting} style={{ marginTop: 16 }}>
+            {submitting ? 'Placing bet...' : 'Confirm Bet'}
+          </button>
+          <button className="btn btn-secondary" type="button" onClick={() => setReviewing(false)} disabled={submitting} style={{ marginTop: 8 }}>
+            Edit
+          </button>
+        </div>
+        <BottomNav role="BETTER" />
+      </>
+    );
+  }
 
   return (
     <>
@@ -52,7 +95,7 @@ export default function CompetitionDetail() {
 
         <h2>Choose your bet</h2>
         {error && <div className="error-banner">{error}</div>}
-        <form onSubmit={onPlaceBet}>
+        <form onSubmit={onReview}>
           {competition.betOptions.map((opt) => {
             const odds = competition.pool.options.find((o) => o.id === opt.id);
             return (
@@ -82,8 +125,8 @@ export default function CompetitionDetail() {
             />
           </div>
 
-          <button className="btn btn-primary" type="submit" disabled={!selectedOptionId || !stake || submitting}>
-            {submitting ? 'Placing bet...' : 'Place Bet'}
+          <button className="btn btn-primary" type="submit" disabled={!selectedOptionId || !stake}>
+            Review Bet
           </button>
         </form>
       </div>

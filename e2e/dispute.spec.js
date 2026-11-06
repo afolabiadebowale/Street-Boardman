@@ -28,7 +28,9 @@ test('Better disputes a submitted result and Admin resolves it', async ({ page }
   await page.getByRole('heading', { name: title }).click();
   await page.getByRole('radio', { name: 'Alpha wins' }).check();
   await page.getByPlaceholder('e.g. 5000').fill('500');
-  await page.getByRole('button', { name: 'Place Bet' }).click();
+  await page.getByRole('button', { name: 'Review Bet' }).click();
+  await expect(page.getByText('Confirm your bet')).toBeVisible();
+  await page.getByRole('button', { name: 'Confirm Bet' }).click();
   await expect(page).toHaveURL(/\/better\/my-bets\/SB-/);
   const ticketUrl = page.url();
 
