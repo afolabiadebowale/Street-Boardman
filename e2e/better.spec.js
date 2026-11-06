@@ -14,7 +14,9 @@ test('Better logs in, places a bet, and sees the ticket', async ({ page }) => {
 
   await page.getByRole('radio', { name: 'Tunde wins' }).check();
   await page.getByPlaceholder('e.g. 5000').fill('500');
-  await page.getByRole('button', { name: 'Place Bet' }).click();
+  await page.getByRole('button', { name: 'Review Bet' }).click();
+  await expect(page.getByText('Confirm your bet')).toBeVisible();
+  await page.getByRole('button', { name: 'Confirm Bet' }).click();
 
   await expect(page).toHaveURL(/\/better\/my-bets\/SB-/);
   await expect(page.getByText('Bet Ticket')).toBeVisible();

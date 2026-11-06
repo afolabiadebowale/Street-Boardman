@@ -49,11 +49,12 @@ Tap a competition to see the full betting options.
 1. Open a competition.
 2. Choose one option (e.g. "Tunde wins").
 3. Enter your stake (minimum NGN 100).
-4. Tap **Place Bet**.
+4. Tap **Review Bet** to see your pick, stake, and estimated payout.
+5. Tap **Confirm Bet**, or **Edit** to go back and change anything.
 
 The app checks your wallet balance and whether betting is still open
 before accepting your bet. If everything is fine, your stake is deducted
-immediately and you get a digital ticket.
+once you confirm, and you get a digital ticket.
 
 ## 7. How to View a Betting Ticket
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import CompetitionDetail from './CompetitionDetail';
 import { api } from '../../api/client';
@@ -99,5 +99,62 @@ describe('CompetitionDetail', () => {
 
     await screen.findByText('Alpha vs Bravo');
     expect(screen.queryByText(/refunded/)).not.toBeInTheDocument();
+  });
+
+  it('reviews before placing the bet, instead of submitting immediately (FEAT-037)', async () => {
+    api.get.mockResolvedValueOnce({
+      competition: makeCompetition({ pool: { totalPool: '10000.00', options: [{ id: 'opt-1', payoutPer100: '180.00' }] } }),
+    });
+    renderDetail();
+
+    await screen.findByText('Alpha vs Bravo');
+    // The "Alpha" radio's accessible name also includes its odds text
+    // ("Alpha ₦100 → ₦180.00"), so select by position instead of name. The
+    // stake field's <label> isn't programmatically associated with its
+    // <input> (pre-existing — a11y labeling is tracked separately under
+    // EPIC-011), so select it by placeholder instead.
+    fireEvent.click(screen.getAllByRole('radio')[0]);
+    fireEvent.change(screen.getByPlaceholderText('e.g. 5000'), { target: { value: '2000' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Review Bet' }));
+
+    expect(await screen.findByText('Confirm your bet')).toBeInTheDocument();
+    expect(screen.getByText('₦2,000')).toBeInTheDocument();
+    expect(screen.getByText('₦3,600')).toBeInTheDocument(); // 180.00 per 100 * 2000/100
+    // The bet isn't placed just by reviewing it.
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('only calls the API once the review is confirmed', async () => {
+    api.get.mockResolvedValueOnce({
+      competition: makeCompetition({ pool: { totalPool: '10000.00', options: [{ id: 'opt-1', payoutPer100: '180.00' }] } }),
+    });
+    api.post.mockResolvedValueOnce({ bet: { betCode: 'SB-000999' } });
+    renderDetail();
+
+    await screen.findByText('Alpha vs Bravo');
+    fireEvent.click(screen.getAllByRole('radio')[0]);
+    fireEvent.change(screen.getByPlaceholderText('e.g. 5000'), { target: { value: '2000' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Review Bet' }));
+    await screen.findByText('Confirm your bet');
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Bet' }));
+
+    await vi.waitFor(() => expect(api.post).toHaveBeenCalledWith('/bets', { betOptionId: 'opt-1', stake: 2000 }));
+  });
+
+  it('lets the Better go back and change the bet before confirming', async () => {
+    api.get.mockResolvedValueOnce({
+      competition: makeCompetition({ pool: { totalPool: '10000.00', options: [{ id: 'opt-1', payoutPer100: '180.00' }] } }),
+    });
+    renderDetail();
+
+    await screen.findByText('Alpha vs Bravo');
+    fireEvent.click(screen.getAllByRole('radio')[0]);
+    fireEvent.change(screen.getByPlaceholderText('e.g. 5000'), { target: { value: '2000' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Review Bet' }));
+    await screen.findByText('Confirm your bet');
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+
+    expect(await screen.findByText('Choose your bet')).toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
   });
 });
