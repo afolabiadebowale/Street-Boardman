@@ -74,12 +74,23 @@ describe('CompetitionDetail', () => {
 
   it("shows the Boardman's name and trust score (FEAT-048)", async () => {
     api.get.mockResolvedValueOnce({
-      competition: makeCompetition({ boardman: { name: 'Tunde', location: 'Lagos', trustScore: 92 } }),
+      competition: makeCompetition({ boardman: { profileId: 'bm-1', name: 'Tunde', location: 'Lagos', trustScore: 92 } }),
     });
     renderDetail();
 
-    expect(await screen.findByText(/Run by Tunde · Lagos/)).toBeInTheDocument();
+    // "Tunde" is a <Link>, a separate text node from "Run by"/"Lagos" (FEAT-048 profile link).
+    expect(await screen.findByRole('link', { name: 'Tunde' })).toBeInTheDocument();
+    expect(screen.getByText(/· Lagos/)).toBeInTheDocument();
     expect(screen.getByText('Trust 92')).toBeInTheDocument();
+  });
+
+  it("links the Boardman's name to the right profile id (FEAT-048)", async () => {
+    api.get.mockResolvedValueOnce({
+      competition: makeCompetition({ boardman: { profileId: 'bm-1', name: 'Tunde', location: 'Lagos', trustScore: 92 } }),
+    });
+    renderDetail();
+
+    expect(await screen.findByRole('link', { name: 'Tunde' })).toHaveAttribute('href', '/better/boardmen/bm-1');
   });
 
   it('surfaces a pool edge-case notice as a banner (FEAT-038)', async () => {
