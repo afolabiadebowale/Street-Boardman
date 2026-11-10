@@ -3,10 +3,14 @@ import { api } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 
 function CodeInput({ value, onChange, id }) {
   return (
-    <input
+    <Input
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -51,27 +55,29 @@ function ChangePassword({ required, onChanged }) {
   };
 
   return (
-    <form className="card" onSubmit={submit}>
-      <p className="muted">Password</p>
-      {required && <p><strong>Your password is too short for a staff account. Choose one of at least 12 characters.</strong></p>}
-      {error && <div className="error-banner">{error}</div>}
-      <div className="field">
-        <label htmlFor="current-password">Current password</label>
-        <input id="current-password" type="password" autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
-      </div>
-      <div className="field">
-        <label htmlFor="new-password">New password (at least 12 characters)</label>
-        <input id="new-password" type="password" autoComplete="new-password" minLength={12} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
-      </div>
-      <div className="field">
-        <label htmlFor="confirm-password">New password again</label>
-        <input id="confirm-password" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
-      </div>
-      <p className="muted">Changing your password signs you out on every other device.</p>
-      <button className="btn btn-primary" type="submit" disabled={busy}>
-        {busy ? 'Saving...' : 'Change password'}
-      </button>
-    </form>
+    <Card asChild>
+      <form onSubmit={submit}>
+        <p className="text-sm text-muted">Password</p>
+        {required && <p><strong>Your password is too short for a staff account. Choose one of at least 12 characters.</strong></p>}
+        {error && <div className="error-banner">{error}</div>}
+        <div className="mb-4">
+          <Label htmlFor="current-password">Current password</Label>
+          <Input id="current-password" type="password" autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="new-password">New password (at least 12 characters)</Label>
+          <Input id="new-password" type="password" autoComplete="new-password" minLength={12} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="confirm-password">New password again</Label>
+          <Input id="confirm-password" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
+        </div>
+        <p className="text-sm text-muted">Changing your password signs you out on every other device.</p>
+        <Button variant="primary" type="submit" disabled={busy}>
+          {busy ? 'Saving...' : 'Change password'}
+        </Button>
+      </form>
+    </Card>
   );
 }
 
@@ -136,7 +142,7 @@ export default function Security() {
   return (
     <>
       <TopBar title="Account Security" />
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         {gated && (
           <div className="error-banner">
             Admin tools are locked until you{' '}
@@ -149,58 +155,60 @@ export default function Security() {
         {error && <div className="error-banner">{error}</div>}
         {notice && <div className="success-banner">{notice}</div>}
 
-        <div className="card">
-          <p className="muted">Two-factor authentication</p>
+        <Card>
+          <p className="text-sm text-muted">Two-factor authentication</p>
           <h2>{user?.mfaEnabled ? 'On' : 'Off'}</h2>
           {!user?.mfaEnabled && (
-            <p className="muted">
+            <p className="text-sm text-muted">
               Staff accounts can move money and change other users. Turn this on so a stolen PIN alone
               is not enough to log in.
             </p>
           )}
-        </div>
+        </Card>
 
         {!user?.mfaEnabled && !setup && (
-          <button type="button" className="btn btn-primary" onClick={startSetup} disabled={busy}>
+          <Button type="button" variant="primary" onClick={startSetup} disabled={busy}>
             {busy ? 'Preparing...' : 'Set up two-factor authentication'}
-          </button>
+          </Button>
         )}
 
         {setup && (
-          <div className="card">
+          <Card>
             <p>
               <strong>1.</strong> In an authenticator app (Google Authenticator, Microsoft Authenticator, Authy),
               scan this code:
             </p>
             <img src={setup.qrDataUrl} alt="QR code for your authenticator app" width={220} height={220} />
-            <p className="muted">
+            <p className="text-sm text-muted">
               Can&apos;t scan? On this phone, <a href={setup.otpauthUrl}>open it in your authenticator app</a>, or
               enter this key manually:
             </p>
-            <p><code style={{ wordBreak: 'break-all' }}>{setup.secret}</code></p>
+            <p><code className="break-all">{setup.secret}</code></p>
             <form onSubmit={confirmSetup}>
-              <div className="field">
-                <label htmlFor="mfa-setup-code"><strong>2.</strong> Enter the 6-digit code the app shows</label>
+              <div className="mb-4">
+                <Label htmlFor="mfa-setup-code"><strong>2.</strong> Enter the 6-digit code the app shows</Label>
                 <CodeInput id="mfa-setup-code" value={code} onChange={setCode} />
               </div>
-              <button className="btn btn-primary" type="submit" disabled={busy || code.length !== 6}>
+              <Button variant="primary" type="submit" disabled={busy || code.length !== 6}>
                 {busy ? 'Checking...' : 'Turn on'}
-              </button>
+              </Button>
             </form>
-          </div>
+          </Card>
         )}
 
         {user?.mfaEnabled && (
-          <form className="card" onSubmit={disable}>
-            <p className="muted">To turn it off, enter a current code from your authenticator app.</p>
-            <div className="field">
-              <label htmlFor="mfa-disable-code">Authentication code</label>
-              <CodeInput id="mfa-disable-code" value={code} onChange={setCode} />
-            </div>
-            <button className="btn btn-danger" type="submit" disabled={busy || code.length !== 6}>
-              Turn off
-            </button>
-          </form>
+          <Card asChild>
+            <form onSubmit={disable}>
+              <p className="text-sm text-muted">To turn it off, enter a current code from your authenticator app.</p>
+              <div className="mb-4">
+                <Label htmlFor="mfa-disable-code">Authentication code</Label>
+                <CodeInput id="mfa-disable-code" value={code} onChange={setCode} />
+              </div>
+              <Button variant="destructive" type="submit" disabled={busy || code.length !== 6}>
+                Turn off
+              </Button>
+            </form>
+          </Card>
         )}
 
         <ChangePassword

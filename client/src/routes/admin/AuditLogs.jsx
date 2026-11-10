@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Card } from '../../components/ui/card';
 
 export default function AuditLogs() {
   const [logs, setLogs] = useState([]);
@@ -13,13 +14,13 @@ export default function AuditLogs() {
   return (
     <>
       <TopBar title="Audit Logs" />
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         {logs.map((log) => (
-          <div key={log.id} className="card">
+          <Card key={log.id}>
             <strong>{log.action}</strong>
-            <p className="muted">{log.entityType} · {log.entityId}</p>
-            <p className="muted">{new Date(log.createdAt).toLocaleString()}</p>
-          </div>
+            <p className="text-sm text-muted">{log.entityType} · {log.entityId}</p>
+            <p className="text-sm text-muted">{new Date(log.createdAt).toLocaleString()}</p>
+          </Card>
         ))}
       </div>
       <BottomNav role="ADMIN" />

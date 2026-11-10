@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Card } from '../../components/ui/card';
 
 export default function Ledger() {
   const [transactions, setTransactions] = useState([]);
@@ -13,16 +14,16 @@ export default function Ledger() {
   return (
     <>
       <TopBar title="Financial Ledger" />
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         {transactions.map((t) => (
-          <div key={t.id} className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Card key={t.id}>
+            <div className="flex justify-between">
               <span>{t.type.replace('_', ' ')}</span>
               <strong>{Number(t.amount) >= 0 ? '+' : ''}₦{Number(t.amount).toLocaleString()}</strong>
             </div>
-            <p className="muted">{t.wallet.walletType} — {t.wallet.user?.fullName || 'Platform'}</p>
-            <p className="muted">{new Date(t.createdAt).toLocaleString()}</p>
-          </div>
+            <p className="text-sm text-muted">{t.wallet.walletType} — {t.wallet.user?.fullName || 'Platform'}</p>
+            <p className="text-sm text-muted">{new Date(t.createdAt).toLocaleString()}</p>
+          </Card>
         ))}
       </div>
       <BottomNav role="ADMIN" />

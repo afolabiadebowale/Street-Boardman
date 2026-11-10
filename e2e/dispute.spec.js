@@ -57,7 +57,7 @@ test('Better disputes a submitted result and Admin resolves it', async ({ page }
   await loginAs(page, SEED_ACCOUNTS.admin);
   await page.getByRole('link', { name: 'Disputes' }).click();
 
-  const disputeCard = page.locator('.card', { hasText: title });
+  const disputeCard = page.getByTestId('dispute-card').filter({ hasText: title });
   await expect(disputeCard).toContainText('Alpha clearly won — this result looks wrong.');
   await disputeCard.getByRole('button', { name: 'Confirm Result & Pay Out' }).click();
 
