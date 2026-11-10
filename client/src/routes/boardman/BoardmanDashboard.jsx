@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
+import { Page } from '../../components/ui/page';
 
 export default function BoardmanDashboard() {
   const { user, boardmanProfile } = useAuth();
@@ -23,7 +24,7 @@ export default function BoardmanDashboard() {
   return (
     <>
       <TopBar title="Boardman Dashboard" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <h1>Welcome, {user?.fullName}</h1>
 
         {!isApproved && (
@@ -56,7 +57,7 @@ export default function BoardmanDashboard() {
         <Button asChild variant="secondary">
           <Link to="/boardman/active">Manage competitions</Link>
         </Button>
-      </div>
+      </Page>
       <BottomNav role="BOARDMAN" />
     </>
   );

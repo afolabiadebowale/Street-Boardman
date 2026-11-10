@@ -38,14 +38,9 @@ body {
   line-height: 1.4;
 }
 
-#root {
-  max-width: 480px;
-  margin: 0 auto;
-  min-height: 100vh;
-  background: var(--color-bg);
-  display: flex;
-  flex-direction: column;
-}
+/* FEAT-050: #root's layout now lives as Tailwind classes directly in
+   client/index.html (needs responsive breakpoints a plain CSS id
+   selector can't express as tersely). */
 
 .page {
   flex: 1;

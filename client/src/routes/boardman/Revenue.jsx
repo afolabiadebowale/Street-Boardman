@@ -3,6 +3,7 @@ import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
 import { Card } from '../../components/ui/card';
+import { Page } from '../../components/ui/page';
 
 export default function Revenue() {
   const [transactions, setTransactions] = useState([]);
@@ -16,7 +17,7 @@ export default function Revenue() {
   return (
     <>
       <TopBar title="Revenue & Commission" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <Card>
           <p className="text-sm text-muted">Total commission earned</p>
           <h1>₦{total.toLocaleString()}</h1>
@@ -32,7 +33,7 @@ export default function Revenue() {
             <p className="text-sm text-muted">{new Date(t.createdAt).toLocaleString()}</p>
           </Card>
         ))}
-      </div>
+      </Page>
       <BottomNav role="BOARDMAN" />
     </>
   );

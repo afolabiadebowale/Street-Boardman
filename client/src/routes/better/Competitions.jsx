@@ -7,6 +7,7 @@ import { Card } from '../../components/ui/card';
 import { Input, Select } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Badge } from '../../components/ui/badge';
+import { Page } from '../../components/ui/page';
 
 // Matches browseCompetitionsQuery's category enum (server/validators/schemas.js).
 const CATEGORIES = [
@@ -52,7 +53,7 @@ export default function Competitions() {
   return (
     <>
       <TopBar title="Available Competitions" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <div className="mb-4">
           <Label htmlFor="competition-search">Search</Label>
           <Input
@@ -105,7 +106,7 @@ export default function Competitions() {
             </Link>
           </Card>
         ))}
-      </div>
+      </Page>
       <BottomNav role="BETTER" />
     </>
   );

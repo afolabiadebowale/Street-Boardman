@@ -6,6 +6,7 @@ import BottomNav from '../../components/BottomNav';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
+import { Page } from '../../components/ui/page';
 
 export default function BetterHome() {
   const { user } = useAuth();
@@ -20,7 +21,7 @@ export default function BetterHome() {
   return (
     <>
       <TopBar title="StreetBoardman" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <h1>Welcome, {user?.fullName}</h1>
 
         <Card>
@@ -44,7 +45,7 @@ export default function BetterHome() {
         <Button asChild variant="secondary">
           <Link to="/better/competitions">See all competitions</Link>
         </Button>
-      </div>
+      </Page>
       <BottomNav role="BETTER" />
     </>
   );

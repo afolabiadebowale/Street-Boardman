@@ -6,6 +6,7 @@ import BottomNav from '../../components/BottomNav';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { cn } from '../../lib/utils';
+import { Page } from '../../components/ui/page';
 
 export default function BoardmanWallet() {
   const [wallet, setWallet] = useState(null);
@@ -19,7 +20,7 @@ export default function BoardmanWallet() {
   return (
     <>
       <TopBar title="Boardman Wallet" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <Card>
           <p className="text-sm text-muted">Balance</p>
           <h1>₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</h1>
@@ -43,7 +44,7 @@ export default function BoardmanWallet() {
             <p className="text-sm text-muted">{new Date(t.createdAt).toLocaleString()}</p>
           </Card>
         ))}
-      </div>
+      </Page>
       <BottomNav role="BOARDMAN" />
     </>
   );

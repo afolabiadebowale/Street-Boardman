@@ -5,6 +5,7 @@ import BottomNav from '../../components/BottomNav';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
+import { Page } from '../../components/ui/page';
 
 export default function Disputes() {
   const [disputes, setDisputes] = useState([]);
@@ -26,7 +27,7 @@ export default function Disputes() {
   return (
     <>
       <TopBar title="Disputes" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         {error && <div className="error-banner">{error}</div>}
         {disputes.length === 0 && <p className="text-sm text-muted">No disputes.</p>}
         {disputes.map((d) => (
@@ -49,7 +50,7 @@ export default function Disputes() {
             )}
           </Card>
         ))}
-      </div>
+      </Page>
       <BottomNav role="ADMIN" />
     </>
   );

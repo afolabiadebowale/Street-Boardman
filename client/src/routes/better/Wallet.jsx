@@ -6,6 +6,7 @@ import BottomNav from '../../components/BottomNav';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { cn } from '../../lib/utils';
+import { Page } from '../../components/ui/page';
 
 export default function Wallet() {
   const [wallet, setWallet] = useState(null);
@@ -19,7 +20,7 @@ export default function Wallet() {
   return (
     <>
       <TopBar title="Wallet" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <Card>
           <p className="text-sm text-muted">Balance</p>
           <h1>₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</h1>
@@ -40,7 +41,7 @@ export default function Wallet() {
           </Card>
         ))}
         <Button asChild variant="secondary"><Link to="/better/transactions">Full transaction history</Link></Button>
-      </div>
+      </Page>
       <BottomNav role="BETTER" />
     </>
   );

@@ -5,6 +5,7 @@ import BottomNav from '../../components/BottomNav';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Page } from '../../components/ui/page';
 
 export default function Settings() {
   const [settings, setSettings] = useState(null);
@@ -39,12 +40,12 @@ export default function Settings() {
     }
   };
 
-  if (!settings) return <div className="px-4 pb-24 pt-4">Loading...</div>;
+  if (!settings) return <Page>Loading...</Page>;
 
   return (
     <>
       <TopBar title="System Settings" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <p className="text-sm text-muted">
           These are platform-wide defaults. Changing them never rewrites commissions already calculated on
           past or in-flight competitions — each competition locks in the rates that were active when it was created.
@@ -66,7 +67,7 @@ export default function Settings() {
           </div>
           <Button variant="primary" type="submit">Save Settings</Button>
         </form>
-      </div>
+      </Page>
       <BottomNav role="ADMIN" />
     </>
   );

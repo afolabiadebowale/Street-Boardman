@@ -5,6 +5,7 @@ import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
+import { Page } from '../../components/ui/page';
 
 export default function BoardmanPublicProfile() {
   const { id } = useParams();
@@ -21,22 +22,22 @@ export default function BoardmanPublicProfile() {
     return (
       <>
         <TopBar title="Boardman" />
-        <div className="px-4 pb-24 pt-4">
+        <Page>
           <div className="error-banner">{error}</div>
-        </div>
+        </Page>
         <BottomNav role="BETTER" />
       </>
     );
   }
 
-  if (!boardman) return <div className="px-4 pb-24 pt-4">Loading...</div>;
+  if (!boardman) return <Page>Loading...</Page>;
 
   const { track } = boardman;
 
   return (
     <>
       <TopBar title={boardman.name} />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <Card>
           <h2 className="mb-1">{boardman.name}</h2>
           <p className="text-sm text-muted">{boardman.location}</p>
@@ -59,7 +60,7 @@ export default function BoardmanPublicProfile() {
         </Card>
 
         <p className="text-sm text-muted">{boardman.scoreExplained}</p>
-      </div>
+      </Page>
       <BottomNav role="BETTER" />
     </>
   );

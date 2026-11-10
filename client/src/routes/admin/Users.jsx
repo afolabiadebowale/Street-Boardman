@@ -5,6 +5,7 @@ import BottomNav from '../../components/BottomNav';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
+import { Page } from '../../components/ui/page';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -26,7 +27,7 @@ export default function Users() {
   return (
     <>
       <TopBar title="Users" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         {error && <div className="error-banner">{error}</div>}
         {users.map((u) => (
           <Card key={u.id}>
@@ -44,7 +45,7 @@ export default function Users() {
             )}
           </Card>
         ))}
-      </div>
+      </Page>
       <BottomNav role="ADMIN" />
     </>
   );

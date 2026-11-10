@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Input, Textarea } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Page } from '../../components/ui/page';
 
 // FEAT-040: a dispute's status comes from the server (bettingService.getBetByCode
 // now includes it), not local component state — so it's still visible here
@@ -72,7 +73,7 @@ export default function BetTicket() {
     }
   };
 
-  if (!bet) return <div className="px-4 pb-24 pt-4">Loading...</div>;
+  if (!bet) return <Page>Loading...</Page>;
 
   const dispute = bet.betOption.competition.disputes?.[0];
   // Matches resultService.raiseDispute: only possible while the Boardman's
@@ -84,7 +85,7 @@ export default function BetTicket() {
   return (
     <>
       <TopBar title="Bet Ticket" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <div className="rounded-md border-2 border-dashed border-primary bg-surface p-5 font-mono">
           <div className="mb-1.5 flex justify-between text-[15px]"><span>BET ID</span><strong>{bet.betCode}</strong></div>
           <div className="mb-1.5 flex justify-between text-[15px]"><span>Competition</span><strong>{bet.betOption.competition.title}</strong></div>
@@ -152,7 +153,7 @@ export default function BetTicket() {
         <Button asChild variant="secondary">
           <Link to="/better/my-bets">Back to My Bets</Link>
         </Button>
-      </div>
+      </Page>
       <BottomNav role="BETTER" />
     </>
   );
