@@ -1,3 +1,19 @@
+@import "tailwindcss";
+
+/* FEAT-049: Tailwind theme tokens, mirroring the --color-* custom
+   properties below exactly so migrated screens keep the same palette —
+   this is additive; every existing rule in this file is unchanged. */
+@theme {
+  --color-primary: #0b6e4f;
+  --color-primary-dark: #084d38;
+  --color-danger: #b3261e;
+  --color-bg: #f5f6f4;
+  --color-surface: #ffffff;
+  --color-muted: #5f6b66;
+  --color-border: #dfe3e0;
+  --radius-md: 12px;
+}
+
 :root {
   --color-primary: #0b6e4f;
   --color-primary-dark: #084d38;
