@@ -11,10 +11,15 @@ import { cn } from '../../lib/utils';
 // Server validates this is a real, already-started month (statementService.monthBounds)
 // — so the picker can't default past that.
 const currentMonth = new Date().toISOString().slice(0, 7);
+// Same shape statementService.monthBounds requires server-side. Re-checked
+// here (not just trusted from the <input type="month">) before building the
+// download link, so the href is never built from unvalidated page state.
+const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 export default function TransactionHistory() {
   const [transactions, setTransactions] = useState([]);
   const [month, setMonth] = useState(currentMonth);
+  const safeMonth = MONTH_PATTERN.test(month) ? month : currentMonth;
 
   useEffect(() => {
     api.get('/wallet/me/transactions').then((d) => setTransactions(d.transactions));
@@ -38,8 +43,8 @@ export default function TransactionHistory() {
           </div>
           <Button asChild variant="secondary">
             <a
-              href={`/api/wallet/me/statement?month=${month}`}
-              download={`streetboardman-statement-${month}.csv`}
+              href={`/api/wallet/me/statement?month=${encodeURIComponent(safeMonth)}`}
+              download={`streetboardman-statement-${safeMonth}.csv`}
             >
               Download CSV
             </a>
