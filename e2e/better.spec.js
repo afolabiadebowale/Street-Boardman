@@ -20,5 +20,5 @@ test('Better logs in, places a bet, and sees the ticket', async ({ page }) => {
 
   await expect(page).toHaveURL(/\/better\/my-bets\/SB-/);
   await expect(page.getByText('Bet Ticket')).toBeVisible();
-  await expect(page.locator('.ticket-row', { hasText: 'Status' })).toContainText('OPEN');
+  await expect(page.getByTestId('ticket-status-row')).toContainText('OPEN');
 });

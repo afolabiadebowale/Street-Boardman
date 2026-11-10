@@ -3,6 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { Input, Textarea } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 
 // FEAT-040: a dispute's status comes from the server (bettingService.getBetByCode
 // now includes it), not local component state — so it's still visible here
@@ -68,7 +72,7 @@ export default function BetTicket() {
     }
   };
 
-  if (!bet) return <div className="page">Loading...</div>;
+  if (!bet) return <div className="px-4 pb-24 pt-4">Loading...</div>;
 
   const dispute = bet.betOption.competition.disputes?.[0];
   // Matches resultService.raiseDispute: only possible while the Boardman's
@@ -80,32 +84,32 @@ export default function BetTicket() {
   return (
     <>
       <TopBar title="Bet Ticket" />
-      <div className="page">
-        <div className="ticket">
-          <div className="ticket-row"><span>BET ID</span><strong>{bet.betCode}</strong></div>
-          <div className="ticket-row"><span>Competition</span><strong>{bet.betOption.competition.title}</strong></div>
-          <div className="ticket-row"><span>Selection</span><strong>{bet.betOption.label}</strong></div>
-          <div className="ticket-row"><span>Stake</span><strong>₦{Number(bet.stake).toLocaleString()}</strong></div>
-          <div className="ticket-row"><span>Estimated payout</span><strong>₦{Number(bet.potentialPayout).toLocaleString()}</strong></div>
-          <div className="ticket-row"><span>Status</span><strong>{bet.status}</strong></div>
+      <div className="px-4 pb-24 pt-4">
+        <div className="rounded-md border-2 border-dashed border-primary bg-surface p-5 font-mono">
+          <div className="mb-1.5 flex justify-between text-[15px]"><span>BET ID</span><strong>{bet.betCode}</strong></div>
+          <div className="mb-1.5 flex justify-between text-[15px]"><span>Competition</span><strong>{bet.betOption.competition.title}</strong></div>
+          <div className="mb-1.5 flex justify-between text-[15px]"><span>Selection</span><strong>{bet.betOption.label}</strong></div>
+          <div className="mb-1.5 flex justify-between text-[15px]"><span>Stake</span><strong>₦{Number(bet.stake).toLocaleString()}</strong></div>
+          <div className="mb-1.5 flex justify-between text-[15px]"><span>Estimated payout</span><strong>₦{Number(bet.potentialPayout).toLocaleString()}</strong></div>
+          <div data-testid="ticket-status-row" className="mb-1.5 flex justify-between text-[15px]"><span>Status</span><strong>{bet.status}</strong></div>
         </div>
-        <p className="muted" style={{ marginTop: 12 }}>
+        <p className="mt-3 text-sm text-muted">
           The estimated payout can change until betting closes — it depends on how much everyone else stakes.
           Your final winnings are confirmed once the result is settled.
         </p>
 
         {canDispute && (
-          <div className="card" style={{ marginTop: 12 }}>
+          <Card className="mt-3">
             <h2>See a problem with this result?</h2>
-            <p className="muted">
+            <p className="text-sm text-muted">
               The Boardman has submitted a result. If you think it's wrong, report it now — once an Admin
               reviews it, no automatic payout happens until they decide.
             </p>
             {error && <div className="error-banner">{error}</div>}
             <form onSubmit={onRaiseDispute}>
-              <div className="field">
-                <label htmlFor="dispute-reason">What's wrong?</label>
-                <textarea
+              <div className="mb-4">
+                <Label htmlFor="dispute-reason">What's wrong?</Label>
+                <Textarea
                   id="dispute-reason"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
@@ -114,38 +118,40 @@ export default function BetTicket() {
                   required
                 />
               </div>
-              <button className="btn btn-danger" type="submit" disabled={submitting}>
+              <Button variant="destructive" type="submit" disabled={submitting}>
                 {submitting ? 'Reporting...' : 'Report a Problem'}
-              </button>
+              </Button>
             </form>
-          </div>
+          </Card>
         )}
         {dispute && (
-          <div className="success-banner" style={{ marginTop: 12 }}>
+          <div className="success-banner mt-3">
             {DISPUTE_STATUS_MESSAGE[dispute.status] || `Dispute status: ${dispute.status}`}
           </div>
         )}
 
-        <div className="card" style={{ marginTop: 12 }}>
+        <Card className="mt-3">
           <h2>Share this ticket</h2>
-          <p className="muted">Anyone with the link can see what was bet and how it ended — never who placed it.</p>
+          <p className="text-sm text-muted">Anyone with the link can see what was bet and how it ended — never who placed it.</p>
           {shareError && <div className="error-banner">{shareError}</div>}
           {shareUrl ? (
-            <div className="field">
-              <label htmlFor="share-url">Shareable link</label>
-              <input id="share-url" value={shareUrl} readOnly onFocus={(e) => e.target.select()} />
-              <button className="btn btn-secondary" type="button" onClick={onCopy} style={{ marginTop: 8 }}>
+            <div className="mb-4">
+              <Label htmlFor="share-url">Shareable link</Label>
+              <Input id="share-url" value={shareUrl} readOnly onFocus={(e) => e.target.select()} />
+              <Button variant="secondary" type="button" onClick={onCopy} className="mt-2">
                 {copied ? 'Copied!' : 'Copy link'}
-              </button>
+              </Button>
             </div>
           ) : (
-            <button className="btn btn-secondary" type="button" onClick={onShare} disabled={sharing}>
+            <Button variant="secondary" type="button" onClick={onShare} disabled={sharing}>
               {sharing ? 'Getting link...' : 'Get a shareable link'}
-            </button>
+            </Button>
           )}
-        </div>
+        </Card>
 
-        <Link to="/better/my-bets" className="btn btn-secondary">Back to My Bets</Link>
+        <Button asChild variant="secondary">
+          <Link to="/better/my-bets">Back to My Bets</Link>
+        </Button>
       </div>
       <BottomNav role="BETTER" />
     </>

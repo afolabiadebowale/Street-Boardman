@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 
 export default function Deposit() {
   const [amount, setAmount] = useState('');
@@ -29,21 +33,21 @@ export default function Deposit() {
   return (
     <>
       <TopBar title="Deposit" />
-      <div className="page">
-        <div className="card">
+      <div className="px-4 pb-24 pt-4">
+        <Card>
           <strong>DEMO MODE</strong>
-          <p className="muted">This adds test money to your wallet instantly. No real payment is taken.</p>
-        </div>
+          <p className="text-sm text-muted">This adds test money to your wallet instantly. No real payment is taken.</p>
+        </Card>
         {error && <div className="error-banner">{error}</div>}
         {success && <div className="success-banner">{success}</div>}
         <form onSubmit={onSubmit}>
-          <div className="field">
-            <label>Amount (₦)</label>
-            <input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+          <div className="mb-4">
+            <Label>Amount (₦)</Label>
+            <Input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
           </div>
-          <button className="btn btn-primary" type="submit" disabled={submitting}>
+          <Button variant="primary" type="submit" disabled={submitting}>
             {submitting ? 'Processing...' : 'Deposit'}
-          </button>
+          </Button>
         </form>
       </div>
       <BottomNav role="BETTER" />

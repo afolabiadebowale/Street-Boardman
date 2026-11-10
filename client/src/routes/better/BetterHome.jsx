@@ -4,6 +4,8 @@ import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
 import { useAuth } from '../../context/AuthContext';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
 
 export default function BetterHome() {
   const { user } = useAuth();
@@ -18,24 +20,30 @@ export default function BetterHome() {
   return (
     <>
       <TopBar title="StreetBoardman" />
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         <h1>Welcome, {user?.fullName}</h1>
 
-        <div className="card">
-          <p className="muted">Wallet balance</p>
+        <Card>
+          <p className="text-sm text-muted">Wallet balance</p>
           <h2>₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</h2>
-          <Link to="/better/deposit" className="btn btn-primary" style={{ marginTop: 8 }}>Deposit</Link>
-        </div>
+          <Button asChild variant="primary" className="mt-2">
+            <Link to="/better/deposit">Deposit</Link>
+          </Button>
+        </Card>
 
         <h2>Open competitions</h2>
-        {competitions.length === 0 && <p className="muted">No competitions open right now.</p>}
+        {competitions.length === 0 && <p className="text-sm text-muted">No competitions open right now.</p>}
         {competitions.map((c) => (
-          <Link key={c.id} to={`/better/competitions/${c.id}`} className="card" style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}>
-            <strong>{c.title}</strong>
-            <p className="muted">{c.category} · Betting closes {new Date(c.bettingDeadline).toLocaleString()}</p>
-          </Link>
+          <Card key={c.id} asChild className="text-inherit no-underline">
+            <Link to={`/better/competitions/${c.id}`}>
+              <strong>{c.title}</strong>
+              <p className="text-sm text-muted">{c.category} · Betting closes {new Date(c.bettingDeadline).toLocaleString()}</p>
+            </Link>
+          </Card>
         ))}
-        <Link to="/better/competitions" className="btn btn-secondary">See all competitions</Link>
+        <Button asChild variant="secondary">
+          <Link to="/better/competitions">See all competitions</Link>
+        </Button>
       </div>
       <BottomNav role="BETTER" />
     </>
