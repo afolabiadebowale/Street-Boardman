@@ -1,10 +1,19 @@
+import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 // Dev-time proxy so the React app can call /api/* without hardcoding the
 // backend's port, and without CORS getting in the way while developing.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    // Matches components.json's aliases — shadcn/ui components import
+    // each other and lib/utils via "@/...".
+    alias: {
+      '@': path.resolve(import.meta.dirname, './src'),
+    },
+  },
   server: {
     port: 5173,
     proxy: {
