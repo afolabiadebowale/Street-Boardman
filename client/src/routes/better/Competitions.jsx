@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Card } from '../../components/ui/card';
+import { Input, Select } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Badge } from '../../components/ui/badge';
 
 // Matches browseCompetitionsQuery's category enum (server/validators/schemas.js).
 const CATEGORIES = [
@@ -48,27 +52,27 @@ export default function Competitions() {
   return (
     <>
       <TopBar title="Available Competitions" />
-      <div className="page">
-        <div className="field">
-          <label htmlFor="competition-search">Search</label>
-          <input
+      <div className="px-4 pb-24 pt-4">
+        <div className="mb-4">
+          <Label htmlFor="competition-search">Search</Label>
+          <Input
             id="competition-search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Team, player, or title"
           />
         </div>
-        <div className="field">
-          <label htmlFor="competition-category">Category</label>
-          <select id="competition-category" value={category} onChange={(e) => setCategory(e.target.value)}>
+        <div className="mb-4">
+          <Label htmlFor="competition-category">Category</Label>
+          <Select id="competition-category" value={category} onChange={(e) => setCategory(e.target.value)}>
             {CATEGORIES.map((c) => (
               <option key={c.value} value={c.value}>{c.label}</option>
             ))}
-          </select>
+          </Select>
         </div>
-        <div className="field">
-          <label htmlFor="competition-location">Location</label>
-          <input
+        <div className="mb-4">
+          <Label htmlFor="competition-location">Location</Label>
+          <Input
             id="competition-location"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
@@ -76,28 +80,30 @@ export default function Competitions() {
           />
         </div>
 
-        {loading && <p className="muted">Loading...</p>}
+        {loading && <p className="text-sm text-muted">Loading...</p>}
         {!loading && competitions.length === 0 && (
-          <p className="muted">
+          <p className="text-sm text-muted">
             {hasFilters ? 'No open competitions match your filters.' : 'No open competitions right now. Check back soon.'}
           </p>
         )}
         {competitions.map((c) => (
-          <Link key={c.id} to={`/better/competitions/${c.id}`} className="card" style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}>
-            <span className="badge badge-open">BETTING OPEN</span>
-            <h2 style={{ marginTop: 8 }}>{c.title}</h2>
-            <p className="muted">{c.category} · Closes {new Date(c.bettingDeadline).toLocaleString()}</p>
-            <p className="muted">{c.betOptions.length} betting options · Pool ₦{Number(c.pool.totalPool).toLocaleString()}</p>
-            {c.boardman && (
-              <p className="muted">
-                Run by {c.boardman.name}
-                {c.boardman.trustScore != null && <span className="trust-badge" style={{ marginLeft: 6 }}>Trust {c.boardman.trustScore}</span>}
-              </p>
-            )}
-            {c.pool.notices.map((n) => (
-              <p key={n.code} className="muted" style={{ color: '#8a5b00' }}>{n.message}</p>
-            ))}
-          </Link>
+          <Card key={c.id} asChild className="text-inherit no-underline">
+            <Link to={`/better/competitions/${c.id}`}>
+              <Badge variant="open">BETTING OPEN</Badge>
+              <h2 className="mt-2">{c.title}</h2>
+              <p className="text-sm text-muted">{c.category} · Closes {new Date(c.bettingDeadline).toLocaleString()}</p>
+              <p className="text-sm text-muted">{c.betOptions.length} betting options · Pool ₦{Number(c.pool.totalPool).toLocaleString()}</p>
+              {c.boardman && (
+                <p className="text-sm text-muted">
+                  Run by {c.boardman.name}
+                  {c.boardman.trustScore != null && <Badge variant="trust" className="ml-1.5">Trust {c.boardman.trustScore}</Badge>}
+                </p>
+              )}
+              {c.pool.notices.map((n) => (
+                <p key={n.code} className="text-sm text-[#8a5b00]">{n.message}</p>
+              ))}
+            </Link>
+          </Card>
         ))}
       </div>
       <BottomNav role="BETTER" />

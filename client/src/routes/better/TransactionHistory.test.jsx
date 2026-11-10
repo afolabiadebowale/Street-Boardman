@@ -40,4 +40,22 @@ describe('TransactionHistory', () => {
       '/api/wallet/me/statement?month=2026-01'
     );
   });
+
+  it("falls back to the current month if the month field holds anything other than YYYY-MM (CodeQL js/xss-through-dom)", async () => {
+    api.get.mockResolvedValueOnce({ transactions: [] });
+    render(<MemoryRouter><TransactionHistory /></MemoryRouter>);
+
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    await screen.findByRole('link', { name: 'Download CSV' });
+
+    // type="month" never lets a real user type this, but nothing stops a
+    // synthetic/dispatched change event from carrying an arbitrary string —
+    // the href must never be built from that unchecked.
+    fireEvent.change(screen.getByLabelText('Month'), { target: { value: 'javascript:alert(1)' } });
+
+    expect(screen.getByRole('link', { name: 'Download CSV' })).toHaveAttribute(
+      'href',
+      `/api/wallet/me/statement?month=${currentMonth}`
+    );
+  });
 });

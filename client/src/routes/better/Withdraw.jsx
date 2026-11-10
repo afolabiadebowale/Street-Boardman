@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 
 export default function Withdraw() {
   const [amount, setAmount] = useState('');
@@ -38,34 +41,34 @@ export default function Withdraw() {
   return (
     <>
       <TopBar title="Withdraw" />
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         {error && <div className="error-banner">{error}</div>}
         {success && <div className="success-banner">{success}</div>}
         <form onSubmit={onSubmit}>
-          <div className="field">
-            <label>Amount (₦)</label>
-            <input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+          <div className="mb-4">
+            <Label>Amount (₦)</Label>
+            <Input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
           </div>
-          <div className="field">
-            <label>Bank name</label>
-            <input value={bankName} onChange={(e) => setBankName(e.target.value)} required />
+          <div className="mb-4">
+            <Label>Bank name</Label>
+            <Input value={bankName} onChange={(e) => setBankName(e.target.value)} required />
           </div>
-          <div className="field">
-            <label>Account number</label>
-            <input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} required />
+          <div className="mb-4">
+            <Label>Account number</Label>
+            <Input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} required />
           </div>
-          <div className="field">
-            <label>Account name</label>
-            <input value={accountName} onChange={(e) => setAccountName(e.target.value)} required />
+          <div className="mb-4">
+            <Label>Account name</Label>
+            <Input value={accountName} onChange={(e) => setAccountName(e.target.value)} required />
           </div>
-          <div className="field">
-            <label htmlFor="withdraw-pin">Your PIN</label>
-            <input id="withdraw-pin" type="password" inputMode="numeric" autoComplete="current-password" value={pin} onChange={(e) => setPin(e.target.value)} required />
-            <p className="muted">Re-enter your PIN to confirm. This keeps your money safe if someone else has your phone.</p>
+          <div className="mb-4">
+            <Label htmlFor="withdraw-pin">Your PIN</Label>
+            <Input id="withdraw-pin" type="password" inputMode="numeric" autoComplete="current-password" value={pin} onChange={(e) => setPin(e.target.value)} required />
+            <p className="text-sm text-muted">Re-enter your PIN to confirm. This keeps your money safe if someone else has your phone.</p>
           </div>
-          <button className="btn btn-primary" type="submit" disabled={submitting}>
+          <Button variant="primary" type="submit" disabled={submitting}>
             {submitting ? 'Requesting...' : 'Request Withdrawal'}
-          </button>
+          </Button>
         </form>
       </div>
       <BottomNav role="BETTER" />

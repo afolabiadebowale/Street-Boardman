@@ -3,6 +3,11 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Badge } from '../../components/ui/badge';
 
 export default function CompetitionDetail() {
   const { id } = useParams();
@@ -40,7 +45,7 @@ export default function CompetitionDetail() {
     }
   };
 
-  if (!competition) return <div className="page">Loading...</div>;
+  if (!competition) return <div className="px-4 pb-24 pt-4">Loading...</div>;
 
   const selectedOption = competition.betOptions.find((o) => o.id === selectedOptionId);
   const selectedOdds = competition.pool.options.find((o) => o.id === selectedOptionId);
@@ -52,24 +57,24 @@ export default function CompetitionDetail() {
     return (
       <>
         <TopBar title={competition.title} />
-        <div className="page">
+        <div className="px-4 pb-24 pt-4">
           <h2>Confirm your bet</h2>
           {error && <div className="error-banner">{error}</div>}
-          <div className="card">
-            <p className="ticket-row"><span>Competition</span><span>{competition.title}</span></p>
-            <p className="ticket-row"><span>Your pick</span><span>{selectedOption?.label}</span></p>
-            <p className="ticket-row"><span>Stake</span><span>₦{Number(stake).toLocaleString()}</span></p>
+          <Card>
+            <p className="mb-1.5 flex justify-between text-[15px]"><span>Competition</span><span>{competition.title}</span></p>
+            <p className="mb-1.5 flex justify-between text-[15px]"><span>Your pick</span><span>{selectedOption?.label}</span></p>
+            <p className="mb-1.5 flex justify-between text-[15px]"><span>Stake</span><span>₦{Number(stake).toLocaleString()}</span></p>
             {estimatedPayout && (
-              <p className="ticket-row"><span>Estimated payout</span><span>₦{Number(estimatedPayout).toLocaleString()}</span></p>
+              <p className="mb-1.5 flex justify-between text-[15px]"><span>Estimated payout</span><span>₦{Number(estimatedPayout).toLocaleString()}</span></p>
             )}
-          </div>
-          <p className="muted">Estimate only — the final payout depends on the pool when betting closes.</p>
-          <button className="btn btn-primary" type="button" onClick={onConfirm} disabled={submitting} style={{ marginTop: 16 }}>
+          </Card>
+          <p className="text-sm text-muted">Estimate only — the final payout depends on the pool when betting closes.</p>
+          <Button variant="primary" type="button" onClick={onConfirm} disabled={submitting} className="mt-4">
             {submitting ? 'Placing bet...' : 'Confirm Bet'}
-          </button>
-          <button className="btn btn-secondary" type="button" onClick={() => setReviewing(false)} disabled={submitting} style={{ marginTop: 8 }}>
+          </Button>
+          <Button variant="secondary" type="button" onClick={() => setReviewing(false)} disabled={submitting} className="mt-2">
             Edit
-          </button>
+          </Button>
         </div>
         <BottomNav role="BETTER" />
       </>
@@ -79,18 +84,18 @@ export default function CompetitionDetail() {
   return (
     <>
       <TopBar title={competition.title} />
-      <div className="page">
-        <p className="muted">{competition.category} · Betting closes {new Date(competition.bettingDeadline).toLocaleString()}</p>
+      <div className="px-4 pb-24 pt-4">
+        <p className="text-sm text-muted">{competition.category} · Betting closes {new Date(competition.bettingDeadline).toLocaleString()}</p>
         {competition.description && <p>{competition.description}</p>}
         {competition.boardman && (
-          <p className="muted">
+          <p className="text-sm text-muted">
             Run by <Link to={`/better/boardmen/${competition.boardman.profileId}`}>{competition.boardman.name}</Link> · {competition.boardman.location}
-            {competition.boardman.trustScore != null && <span className="trust-badge" style={{ marginLeft: 6 }}>Trust {competition.boardman.trustScore}</span>}
+            {competition.boardman.trustScore != null && <Badge variant="trust" className="ml-1.5">Trust {competition.boardman.trustScore}</Badge>}
           </p>
         )}
-        <p className="muted">Pool so far: ₦{Number(competition.pool.totalPool).toLocaleString()}</p>
+        <p className="text-sm text-muted">Pool so far: ₦{Number(competition.pool.totalPool).toLocaleString()}</p>
         {competition.pool.notices.map((n) => (
-          <div key={n.code} className="notice-banner">{n.message}</div>
+          <div key={n.code} className="mb-4 rounded-[10px] bg-[#fff4e0] p-3 text-sm text-[#8a5b00]">{n.message}</div>
         ))}
 
         <h2>Choose your bet</h2>
@@ -99,23 +104,25 @@ export default function CompetitionDetail() {
           {competition.betOptions.map((opt) => {
             const odds = competition.pool.options.find((o) => o.id === opt.id);
             return (
-              <label key={opt.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                <input
-                  type="radio"
-                  name="option"
-                  value={opt.id}
-                  checked={selectedOptionId === opt.id}
-                  onChange={() => setSelectedOptionId(opt.id)}
-                />
-                <span style={{ flex: 1 }}>{opt.label}</span>
-                {odds?.payoutPer100 && <span className="muted">₦100 → ₦{odds.payoutPer100}</span>}
-              </label>
+              <Card key={opt.id} asChild className="flex cursor-pointer items-center gap-3">
+                <label>
+                  <input
+                    type="radio"
+                    name="option"
+                    value={opt.id}
+                    checked={selectedOptionId === opt.id}
+                    onChange={() => setSelectedOptionId(opt.id)}
+                  />
+                  <span className="flex-1">{opt.label}</span>
+                  {odds?.payoutPer100 && <span className="text-sm text-muted">₦100 → ₦{odds.payoutPer100}</span>}
+                </label>
+              </Card>
             );
           })}
 
-          <div className="field" style={{ marginTop: 16 }}>
-            <label>Stake (₦)</label>
-            <input
+          <div className="mb-4 mt-4">
+            <Label>Stake (₦)</Label>
+            <Input
               type="number"
               min="100"
               value={stake}
@@ -125,9 +132,9 @@ export default function CompetitionDetail() {
             />
           </div>
 
-          <button className="btn btn-primary" type="submit" disabled={!selectedOptionId || !stake}>
+          <Button variant="primary" type="submit" disabled={!selectedOptionId || !stake}>
             Review Bet
-          </button>
+          </Button>
         </form>
       </div>
       <BottomNav role="BETTER" />

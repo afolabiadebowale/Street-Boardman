@@ -1,6 +1,7 @@
 import { useAuth } from '../../context/AuthContext';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Card } from '../../components/ui/card';
 
 export default function Profile() {
   const { user } = useAuth();
@@ -8,23 +9,23 @@ export default function Profile() {
   return (
     <>
       <TopBar title="Profile" />
-      <div className="page">
-        <div className="card">
-          <p className="muted">Full name</p>
+      <div className="px-4 pb-24 pt-4">
+        <Card>
+          <p className="text-sm text-muted">Full name</p>
           <strong>{user?.fullName}</strong>
-        </div>
-        <div className="card">
-          <p className="muted">Phone number</p>
+        </Card>
+        <Card>
+          <p className="text-sm text-muted">Phone number</p>
           <strong>{user?.phone}</strong>
-        </div>
-        <div className="card">
-          <p className="muted">Account status</p>
+        </Card>
+        <Card>
+          <p className="text-sm text-muted">Account status</p>
           <strong>{user?.status}</strong>
-        </div>
-        <div className="card">
-          <p className="muted">Need help?</p>
+        </Card>
+        <Card>
+          <p className="text-sm text-muted">Need help?</p>
           <p>Contact support through your Boardman, or reach the platform support line listed in the app footer.</p>
-        </div>
+        </Card>
       </div>
       <BottomNav role="BETTER" />
     </>

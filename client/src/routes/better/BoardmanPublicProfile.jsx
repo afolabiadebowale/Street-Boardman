@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 
 export default function BoardmanPublicProfile() {
   const { id } = useParams();
@@ -19,7 +21,7 @@ export default function BoardmanPublicProfile() {
     return (
       <>
         <TopBar title="Boardman" />
-        <div className="page">
+        <div className="px-4 pb-24 pt-4">
           <div className="error-banner">{error}</div>
         </div>
         <BottomNav role="BETTER" />
@@ -27,36 +29,36 @@ export default function BoardmanPublicProfile() {
     );
   }
 
-  if (!boardman) return <div className="page">Loading...</div>;
+  if (!boardman) return <div className="px-4 pb-24 pt-4">Loading...</div>;
 
   const { track } = boardman;
 
   return (
     <>
       <TopBar title={boardman.name} />
-      <div className="page">
-        <div className="card">
-          <h2 style={{ marginBottom: 4 }}>{boardman.name}</h2>
-          <p className="muted">{boardman.location}</p>
+      <div className="px-4 pb-24 pt-4">
+        <Card>
+          <h2 className="mb-1">{boardman.name}</h2>
+          <p className="text-sm text-muted">{boardman.location}</p>
           {boardman.memberSince && (
-            <p className="muted">Boardman since {new Date(boardman.memberSince).toLocaleDateString()}</p>
+            <p className="text-sm text-muted">Boardman since {new Date(boardman.memberSince).toLocaleDateString()}</p>
           )}
           {boardman.trustScore != null ? (
-            <span className="trust-badge" style={{ marginTop: 8 }}>Trust {boardman.trustScore}</span>
+            <Badge variant="trust" className="mt-2">Trust {boardman.trustScore}</Badge>
           ) : (
-            <p className="muted" style={{ marginTop: 8 }}>New Boardman — not enough settled competitions yet for a trust score.</p>
+            <p className="mt-2 text-sm text-muted">New Boardman — not enough settled competitions yet for a trust score.</p>
           )}
-        </div>
+        </Card>
 
-        <div className="card">
-          <p className="ticket-row"><span>Completed competitions</span><strong>{track.completedCompetitions}</strong></p>
-          <p className="ticket-row"><span>Disputed</span><strong>{track.disputedCompetitions}</strong></p>
-          <p className="ticket-row"><span>Results overturned</span><strong>{track.resultsOverturned}</strong></p>
-          <p className="ticket-row"><span>Cancelled by Boardman</span><strong>{track.cancelledByBoardman}</strong></p>
-          <p className="ticket-row"><span>Total staked on completed competitions</span><strong>₦{Number(track.totalStakedOnCompleted).toLocaleString()}</strong></p>
-        </div>
+        <Card>
+          <p className="mb-1.5 flex justify-between text-[15px]"><span>Completed competitions</span><strong>{track.completedCompetitions}</strong></p>
+          <p className="mb-1.5 flex justify-between text-[15px]"><span>Disputed</span><strong>{track.disputedCompetitions}</strong></p>
+          <p className="mb-1.5 flex justify-between text-[15px]"><span>Results overturned</span><strong>{track.resultsOverturned}</strong></p>
+          <p className="mb-1.5 flex justify-between text-[15px]"><span>Cancelled by Boardman</span><strong>{track.cancelledByBoardman}</strong></p>
+          <p className="mb-1.5 flex justify-between text-[15px]"><span>Total staked on completed competitions</span><strong>₦{Number(track.totalStakedOnCompleted).toLocaleString()}</strong></p>
+        </Card>
 
-        <p className="muted">{boardman.scoreExplained}</p>
+        <p className="text-sm text-muted">{boardman.scoreExplained}</p>
       </div>
       <BottomNav role="BETTER" />
     </>
