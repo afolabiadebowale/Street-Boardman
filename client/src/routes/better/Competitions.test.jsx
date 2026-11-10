@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Competitions from './Competitions';
 import { api } from '../../api/client';
@@ -70,5 +70,52 @@ describe('Competitions', () => {
 
     await screen.findByText('Alpha vs Bravo');
     expect(screen.queryByText(/refunded/)).not.toBeInTheDocument();
+  });
+
+  it('loads the unfiltered list immediately on mount (FEAT-043)', async () => {
+    api.get.mockResolvedValueOnce({ competitions: [] });
+    render(<MemoryRouter><Competitions /></MemoryRouter>);
+
+    await waitFor(() => expect(api.get).toHaveBeenCalledWith('/competitions'));
+  });
+
+  it('searches by title/player as the Better types, debounced (FEAT-043)', async () => {
+    api.get.mockResolvedValue({ competitions: [] });
+    render(<MemoryRouter><Competitions /></MemoryRouter>);
+    await waitFor(() => expect(api.get).toHaveBeenCalledWith('/competitions'));
+
+    fireEvent.change(screen.getByLabelText('Search'), { target: { value: 'Tunde' } });
+
+    await waitFor(() => expect(api.get).toHaveBeenCalledWith('/competitions?q=Tunde'));
+  });
+
+  it('filters by category (FEAT-043)', async () => {
+    api.get.mockResolvedValue({ competitions: [] });
+    render(<MemoryRouter><Competitions /></MemoryRouter>);
+    await waitFor(() => expect(api.get).toHaveBeenCalledWith('/competitions'));
+
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'SNOOKER' } });
+
+    await waitFor(() => expect(api.get).toHaveBeenCalledWith('/competitions?category=SNOOKER'));
+  });
+
+  it('filters by location (FEAT-043)', async () => {
+    api.get.mockResolvedValue({ competitions: [] });
+    render(<MemoryRouter><Competitions /></MemoryRouter>);
+    await waitFor(() => expect(api.get).toHaveBeenCalledWith('/competitions'));
+
+    fireEvent.change(screen.getByLabelText('Location'), { target: { value: 'Lagos' } });
+
+    await waitFor(() => expect(api.get).toHaveBeenCalledWith('/competitions?location=Lagos'));
+  });
+
+  it('shows a filter-specific empty state once a filter is active (FEAT-043)', async () => {
+    api.get.mockResolvedValue({ competitions: [] });
+    render(<MemoryRouter><Competitions /></MemoryRouter>);
+    await screen.findByText('No open competitions right now. Check back soon.');
+
+    fireEvent.change(screen.getByLabelText('Search'), { target: { value: 'Zzz' } });
+
+    expect(await screen.findByText('No open competitions match your filters.')).toBeInTheDocument();
   });
 });
