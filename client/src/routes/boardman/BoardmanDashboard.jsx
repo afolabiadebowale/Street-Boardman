@@ -4,6 +4,9 @@ import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
 import { useAuth } from '../../context/AuthContext';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 
 export default function BoardmanDashboard() {
   const { user, boardmanProfile } = useAuth();
@@ -20,7 +23,7 @@ export default function BoardmanDashboard() {
   return (
     <>
       <TopBar title="Boardman Dashboard" />
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         <h1>Welcome, {user?.fullName}</h1>
 
         {!isApproved && (
@@ -30,25 +33,29 @@ export default function BoardmanDashboard() {
           </div>
         )}
 
-        <div className="card">
-          <p className="muted">Commission wallet balance</p>
+        <Card>
+          <p className="text-sm text-muted">Commission wallet balance</p>
           <h2>₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</h2>
-        </div>
+        </Card>
 
-        <Link to="/boardman/create" className="btn btn-primary">+ Create Competition</Link>
+        <Button asChild variant="primary">
+          <Link to="/boardman/create">+ Create Competition</Link>
+        </Button>
 
-        <h2 style={{ marginTop: 24 }}>Your competitions</h2>
-        {competitions.length === 0 && <p className="muted">You haven't created any competitions yet.</p>}
+        <h2 className="mt-6">Your competitions</h2>
+        {competitions.length === 0 && <p className="text-sm text-muted">You haven't created any competitions yet.</p>}
         {competitions.slice(0, 5).map((c) => (
-          <div key={c.id} className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Card key={c.id}>
+            <div className="flex justify-between">
               <strong>{c.title}</strong>
-              <span className="badge badge-open">{c.status.replace('_', ' ')}</span>
+              <Badge variant="open">{c.status.replace('_', ' ')}</Badge>
             </div>
-            <p className="muted">{c.category}</p>
-          </div>
+            <p className="text-sm text-muted">{c.category}</p>
+          </Card>
         ))}
-        <Link to="/boardman/active" className="btn btn-secondary">Manage competitions</Link>
+        <Button asChild variant="secondary">
+          <Link to="/boardman/active">Manage competitions</Link>
+        </Button>
       </div>
       <BottomNav role="BOARDMAN" />
     </>

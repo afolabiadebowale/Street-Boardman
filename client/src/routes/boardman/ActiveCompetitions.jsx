@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 
 export default function ActiveCompetitions() {
   const [competitions, setCompetitions] = useState([]);
@@ -14,21 +16,18 @@ export default function ActiveCompetitions() {
   return (
     <>
       <TopBar title="My Competitions" />
-      <div className="page">
-        {competitions.length === 0 && <p className="muted">You haven't created any competitions yet.</p>}
+      <div className="px-4 pb-24 pt-4">
+        {competitions.length === 0 && <p className="text-sm text-muted">You haven't created any competitions yet.</p>}
         {competitions.map((c) => (
-          <Link
-            key={c.id}
-            to={`/boardman/competitions/${c.id}`}
-            className="card"
-            style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <strong>{c.title}</strong>
-              <span className="badge badge-open">{c.status.replace('_', ' ')}</span>
-            </div>
-            <p className="muted">{c.category} · Closes {new Date(c.bettingDeadline).toLocaleString()}</p>
-          </Link>
+          <Card key={c.id} asChild className="text-inherit no-underline">
+            <Link to={`/boardman/competitions/${c.id}`}>
+              <div className="flex justify-between">
+                <strong>{c.title}</strong>
+                <Badge variant="open">{c.status.replace('_', ' ')}</Badge>
+              </div>
+              <p className="text-sm text-muted">{c.category} · Closes {new Date(c.bettingDeadline).toLocaleString()}</p>
+            </Link>
+          </Card>
         ))}
       </div>
       <BottomNav role="BOARDMAN" />

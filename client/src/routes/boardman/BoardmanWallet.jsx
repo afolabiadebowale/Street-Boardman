@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { cn } from '../../lib/utils';
 
 export default function BoardmanWallet() {
   const [wallet, setWallet] = useState(null);
@@ -16,25 +19,29 @@ export default function BoardmanWallet() {
   return (
     <>
       <TopBar title="Boardman Wallet" />
-      <div className="page">
-        <div className="card">
-          <p className="muted">Balance</p>
+      <div className="px-4 pb-24 pt-4">
+        <Card>
+          <p className="text-sm text-muted">Balance</p>
           <h1>₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</h1>
-        </div>
-        <Link to="/boardman/withdraw" className="btn btn-primary">Withdraw</Link>
-        <Link to="/boardman/revenue" className="btn btn-secondary">View Commission History</Link>
+        </Card>
+        <Button asChild variant="primary">
+          <Link to="/boardman/withdraw">Withdraw</Link>
+        </Button>
+        <Button asChild variant="secondary">
+          <Link to="/boardman/revenue">View Commission History</Link>
+        </Button>
 
-        <h2 style={{ marginTop: 24 }}>Recent activity</h2>
+        <h2 className="mt-6">Recent activity</h2>
         {transactions.map((t) => (
-          <div key={t.id} className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Card key={t.id}>
+            <div className="flex justify-between">
               <span>{t.type.replace('_', ' ')}</span>
-              <strong style={{ color: Number(t.amount) >= 0 ? 'var(--color-primary)' : 'var(--color-danger)' }}>
+              <strong className={cn(Number(t.amount) >= 0 ? 'text-primary' : 'text-danger')}>
                 {Number(t.amount) >= 0 ? '+' : ''}₦{Number(t.amount).toLocaleString()}
               </strong>
             </div>
-            <p className="muted">{new Date(t.createdAt).toLocaleString()}</p>
-          </div>
+            <p className="text-sm text-muted">{new Date(t.createdAt).toLocaleString()}</p>
+          </Card>
         ))}
       </div>
       <BottomNav role="BOARDMAN" />

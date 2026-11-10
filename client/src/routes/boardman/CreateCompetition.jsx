@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import { Input, Select, Textarea } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 
 const CATEGORIES = ['FOOTBALL', 'SNOOKER', 'FIGHT', 'TABLE_GAME', 'OTHER'];
 
@@ -48,38 +51,38 @@ export default function CreateCompetition() {
   return (
     <>
       <TopBar title="Create Competition" />
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         {error && <div className="error-banner">{error}</div>}
         <form onSubmit={onSubmit}>
-          <div className="field">
-            <label>Title</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Tunde vs Seyi" required />
+          <div className="mb-4">
+            <Label>Title</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Tunde vs Seyi" required />
           </div>
-          <div className="field">
-            <label>Category</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <div className="mb-4">
+            <Label>Category</Label>
+            <Select value={category} onChange={(e) => setCategory(e.target.value)}>
               {CATEGORIES.map((c) => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
-            </select>
+            </Select>
           </div>
-          <div className="field">
-            <label>Participant A</label>
-            <input value={participantA} onChange={(e) => setParticipantA(e.target.value)} placeholder="e.g. Tunde" required />
+          <div className="mb-4">
+            <Label>Participant A</Label>
+            <Input value={participantA} onChange={(e) => setParticipantA(e.target.value)} placeholder="e.g. Tunde" required />
           </div>
-          <div className="field">
-            <label>Participant B</label>
-            <input value={participantB} onChange={(e) => setParticipantB(e.target.value)} placeholder="e.g. Seyi" required />
+          <div className="mb-4">
+            <Label>Participant B</Label>
+            <Input value={participantB} onChange={(e) => setParticipantB(e.target.value)} placeholder="e.g. Seyi" required />
           </div>
-          <div className="field">
-            <label>Betting deadline</label>
-            <input type="datetime-local" value={bettingDeadline} onChange={(e) => setBettingDeadline(e.target.value)} required />
+          <div className="mb-4">
+            <Label>Betting deadline</Label>
+            <Input type="datetime-local" value={bettingDeadline} onChange={(e) => setBettingDeadline(e.target.value)} required />
           </div>
-          <div className="field">
-            <label>Notes (optional)</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+          <div className="mb-4">
+            <Label>Notes (optional)</Label>
+            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
           </div>
-          <button className="btn btn-primary" type="submit" disabled={submitting}>
+          <Button variant="primary" type="submit" disabled={submitting}>
             {submitting ? 'Creating...' : 'Create Competition'}
-          </button>
+          </Button>
         </form>
       </div>
       <BottomNav role="BOARDMAN" />
