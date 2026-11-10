@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -84,7 +84,7 @@ export default function CompetitionDetail() {
         {competition.description && <p>{competition.description}</p>}
         {competition.boardman && (
           <p className="muted">
-            Run by {competition.boardman.name} · {competition.boardman.location}
+            Run by <Link to={`/better/boardmen/${competition.boardman.profileId}`}>{competition.boardman.name}</Link> · {competition.boardman.location}
             {competition.boardman.trustScore != null && <span className="trust-badge" style={{ marginLeft: 6 }}>Trust {competition.boardman.trustScore}</span>}
           </p>
         )}

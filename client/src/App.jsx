@@ -18,6 +18,7 @@ const admin = () => import('./routes/admin');
 const BetterHome = fromRole(better, 'BetterHome');
 const Competitions = fromRole(better, 'Competitions');
 const CompetitionDetail = fromRole(better, 'CompetitionDetail');
+const BoardmanPublicProfile = fromRole(better, 'BoardmanPublicProfile');
 const MyBets = fromRole(better, 'MyBets');
 const BetTicket = fromRole(better, 'BetTicket');
 const Wallet = fromRole(better, 'Wallet');
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="/better" element={<ProtectedRoute role="BETTER"><BetterHome /></ProtectedRoute>} />
         <Route path="/better/competitions" element={<ProtectedRoute role="BETTER"><Competitions /></ProtectedRoute>} />
         <Route path="/better/competitions/:id" element={<ProtectedRoute role="BETTER"><CompetitionDetail /></ProtectedRoute>} />
+        <Route path="/better/boardmen/:id" element={<ProtectedRoute role="BETTER"><BoardmanPublicProfile /></ProtectedRoute>} />
         <Route path="/better/my-bets" element={<ProtectedRoute role="BETTER"><MyBets /></ProtectedRoute>} />
         <Route path="/better/my-bets/:betCode" element={<ProtectedRoute role="BETTER"><BetTicket /></ProtectedRoute>} />
         <Route path="/better/wallet" element={<ProtectedRoute role="BETTER"><Wallet /></ProtectedRoute>} />
