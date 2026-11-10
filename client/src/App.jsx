@@ -47,7 +47,7 @@ const Security = fromRole(admin, 'Security');
 
 export default function App() {
   return (
-    <Suspense fallback={<div className="page-loading">Loading...</div>}>
+    <Suspense fallback={<div className="px-4 py-10 text-center text-muted">Loading...</div>}>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />

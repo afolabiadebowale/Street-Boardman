@@ -14,9 +14,9 @@ export default function TopBar({ title }) {
   };
 
   return (
-    <div className="top-bar">
+    <div className="flex items-center justify-between bg-primary p-4 text-white">
       <strong>{title}</strong>
-      <button onClick={onLogout}>Log out</button>
+      <button className="border-none bg-transparent text-sm text-white" onClick={onLogout}>Log out</button>
     </div>
   );
 }
