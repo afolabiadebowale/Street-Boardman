@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 
 function homeFor(role) {
   if (role === 'ADMIN') return '/admin';
@@ -73,14 +76,14 @@ export default function Login() {
 
   if (mfaToken) {
     return (
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         <h1>Enter your code</h1>
-        <p className="muted">Open your authenticator app and enter the 6-digit code for StreetBoardman.</p>
+        <p className="text-sm text-muted">Open your authenticator app and enter the 6-digit code for StreetBoardman.</p>
         {error && <div className="error-banner">{error}</div>}
         <form onSubmit={onSubmitCode}>
-          <div className="field">
-            <label htmlFor="mfa-code">Authentication code</label>
-            <input
+          <div className="mb-4">
+            <Label htmlFor="mfa-code">Authentication code</Label>
+            <Input
               id="mfa-code"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -92,37 +95,37 @@ export default function Login() {
               required
             />
           </div>
-          <button className="btn btn-primary" disabled={submitting || code.length !== 6} type="submit">
+          <Button variant="primary" disabled={submitting || code.length !== 6} type="submit">
             {submitting ? 'Verifying...' : 'Verify'}
-          </button>
+          </Button>
         </form>
-        <p className="muted">
-          <button type="button" className="btn btn-secondary" onClick={startOver}>
+        <p className="text-sm text-muted">
+          <Button type="button" variant="secondary" onClick={startOver}>
             Back to login
-          </button>
+          </Button>
         </p>
       </div>
     );
   }
 
   return (
-    <div className="page">
+    <div className="px-4 pb-24 pt-4">
       <h1>Log In</h1>
       {error && <div className="error-banner">{error}</div>}
       <form onSubmit={onSubmitPin}>
-        <div className="field">
-          <label>Phone number</label>
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" required />
+        <div className="mb-4">
+          <Label>Phone number</Label>
+          <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" required />
         </div>
-        <div className="field">
-          <label>PIN / Password</label>
-          <input value={pin} onChange={(e) => setPin(e.target.value)} type="password" required />
+        <div className="mb-4">
+          <Label>PIN / Password</Label>
+          <Input value={pin} onChange={(e) => setPin(e.target.value)} type="password" required />
         </div>
-        <button className="btn btn-primary" disabled={submitting} type="submit">
+        <Button variant="primary" disabled={submitting} type="submit">
           {submitting ? 'Logging in...' : 'Log In'}
-        </button>
+        </Button>
       </form>
-      <p className="muted">
+      <p className="text-sm text-muted">
         No account? <Link to="/">Register</Link>
       </p>
     </div>
