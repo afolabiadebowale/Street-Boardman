@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 
 export default function AdminCompetitions() {
   const [competitions, setCompetitions] = useState([]);
@@ -13,16 +15,16 @@ export default function AdminCompetitions() {
   return (
     <>
       <TopBar title="All Competitions" />
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         {competitions.map((c) => (
-          <div key={c.id} className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Card key={c.id}>
+            <div className="flex justify-between">
               <strong>{c.title}</strong>
-              <span className="badge badge-open">{c.status.replace('_', ' ')}</span>
+              <Badge variant="open">{c.status.replace('_', ' ')}</Badge>
             </div>
-            <p className="muted">Boardman: {c.boardmanProfile.user.fullName} ({c.boardmanProfile.user.phone})</p>
-            <p className="muted">{c.category} · Closes {new Date(c.bettingDeadline).toLocaleString()}</p>
-          </div>
+            <p className="text-sm text-muted">Boardman: {c.boardmanProfile.user.fullName} ({c.boardmanProfile.user.phone})</p>
+            <p className="text-sm text-muted">{c.category} · Closes {new Date(c.bettingDeadline).toLocaleString()}</p>
+          </Card>
         ))}
       </div>
       <BottomNav role="ADMIN" />

@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -23,23 +26,23 @@ export default function Users() {
   return (
     <>
       <TopBar title="Users" />
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         {error && <div className="error-banner">{error}</div>}
         {users.map((u) => (
-          <div key={u.id} className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Card key={u.id}>
+            <div className="flex justify-between">
               <strong>{u.fullName}</strong>
-              <span className={`badge ${u.status === 'ACTIVE' ? 'badge-open' : 'badge-disputed'}`}>{u.status}</span>
+              <Badge variant={u.status === 'ACTIVE' ? 'open' : 'disputed'}>{u.status}</Badge>
             </div>
-            <p className="muted">{u.phone} · {u.role}</p>
+            <p className="text-sm text-muted">{u.phone} · {u.role}</p>
             {u.role !== 'ADMIN' && (
               u.status === 'ACTIVE' ? (
-                <button className="btn btn-danger" style={{ marginTop: 8 }} onClick={() => act(u.id, 'suspend')}>Suspend</button>
+                <Button variant="destructive" className="mt-2" onClick={() => act(u.id, 'suspend')}>Suspend</Button>
               ) : (
-                <button className="btn btn-primary" style={{ marginTop: 8 }} onClick={() => act(u.id, 'reactivate')}>Reactivate</button>
+                <Button variant="primary" className="mt-2" onClick={() => act(u.id, 'reactivate')}>Reactivate</Button>
               )
             )}
-          </div>
+          </Card>
         ))}
       </div>
       <BottomNav role="ADMIN" />

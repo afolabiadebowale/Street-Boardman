@@ -4,6 +4,8 @@ import { api } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
 
 // During the grace period, says exactly what's missing and the date admin
 // tools lock. After it, ProtectedRoute redirects to /admin/security instead.
@@ -32,28 +34,28 @@ export default function AdminOverview() {
     api.get('/admin/overview').then(setOverview);
   }, []);
 
-  if (!overview) return <div className="page">Loading...</div>;
+  if (!overview) return <div className="px-4 pb-24 pt-4">Loading...</div>;
 
   return (
     <>
       <TopBar title="Platform Overview" />
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         <StaffSecurityBanner gate={user?.staffSecurity} />
-        <div className="card">
-          <p className="muted">Platform revenue (commission wallet)</p>
+        <Card>
+          <p className="text-sm text-muted">Platform revenue (commission wallet)</p>
           <h1>₦{Number(overview.platformRevenue).toLocaleString()}</h1>
-        </div>
-        <div className="card"><span className="muted">Registered Betters</span><strong style={{ float: 'right' }}>{overview.userCount}</strong></div>
-        <div className="card"><span className="muted">Boardmen</span><strong style={{ float: 'right' }}>{overview.boardmanCount}</strong></div>
-        <div className="card"><span className="muted">Competitions</span><strong style={{ float: 'right' }}>{overview.competitionCount}</strong></div>
-        <div className="card"><span className="muted">Total bets placed</span><strong style={{ float: 'right' }}>{overview.betCount}</strong></div>
+        </Card>
+        <Card><span className="text-sm text-muted">Registered Betters</span><strong className="float-right">{overview.userCount}</strong></Card>
+        <Card><span className="text-sm text-muted">Boardmen</span><strong className="float-right">{overview.boardmanCount}</strong></Card>
+        <Card><span className="text-sm text-muted">Competitions</span><strong className="float-right">{overview.competitionCount}</strong></Card>
+        <Card><span className="text-sm text-muted">Total bets placed</span><strong className="float-right">{overview.betCount}</strong></Card>
 
-        <h2 style={{ marginTop: 24 }}>Manage</h2>
-        <Link to="/admin/users" className="btn btn-secondary">Users</Link>
-        <Link to="/admin/competitions" className="btn btn-secondary">All Competitions</Link>
-        <Link to="/admin/ledger" className="btn btn-secondary">Financial Ledger</Link>
-        <Link to="/admin/audit-logs" className="btn btn-secondary">Audit Logs</Link>
-        <Link to="/admin/security" className="btn btn-secondary">Account Security</Link>
+        <h2 className="mt-6">Manage</h2>
+        <Button asChild variant="secondary"><Link to="/admin/users">Users</Link></Button>
+        <Button asChild variant="secondary"><Link to="/admin/competitions">All Competitions</Link></Button>
+        <Button asChild variant="secondary"><Link to="/admin/ledger">Financial Ledger</Link></Button>
+        <Button asChild variant="secondary"><Link to="/admin/audit-logs">Audit Logs</Link></Button>
+        <Button asChild variant="secondary"><Link to="/admin/security">Account Security</Link></Button>
       </div>
       <BottomNav role="ADMIN" />
     </>

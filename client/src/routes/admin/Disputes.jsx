@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 
 export default function Disputes() {
   const [disputes, setDisputes] = useState([]);
@@ -23,28 +26,28 @@ export default function Disputes() {
   return (
     <>
       <TopBar title="Disputes" />
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         {error && <div className="error-banner">{error}</div>}
-        {disputes.length === 0 && <p className="muted">No disputes.</p>}
+        {disputes.length === 0 && <p className="text-sm text-muted">No disputes.</p>}
         {disputes.map((d) => (
-          <div key={d.id} className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Card key={d.id} data-testid="dispute-card">
+            <div className="flex justify-between">
               <strong>{d.competition.title}</strong>
-              <span className={`badge ${d.status === 'OPEN' ? 'badge-disputed' : 'badge-closed'}`}>{d.status}</span>
+              <Badge variant={d.status === 'OPEN' ? 'disputed' : 'closed'}>{d.status}</Badge>
             </div>
-            <p className="muted">Raised by {d.raisedByUser.fullName} ({d.raisedByUser.phone})</p>
+            <p className="text-sm text-muted">Raised by {d.raisedByUser.fullName} ({d.raisedByUser.phone})</p>
             <p>{d.reason}</p>
             {(d.status === 'OPEN' || d.status === 'UNDER_REVIEW') && (
-              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                <button className="btn btn-primary" style={{ margin: 0 }} onClick={() => resolve(d.id, 'CONFIRM')}>
+              <div className="mt-2 flex gap-2">
+                <Button variant="primary" className="mb-0 flex-1" onClick={() => resolve(d.id, 'CONFIRM')}>
                   Confirm Result & Pay Out
-                </button>
-                <button className="btn btn-danger" style={{ margin: 0 }} onClick={() => resolve(d.id, 'CANCEL')}>
+                </Button>
+                <Button variant="destructive" className="mb-0 flex-1" onClick={() => resolve(d.id, 'CANCEL')}>
                   Cancel & Refund
-                </button>
+                </Button>
               </div>
             )}
-          </div>
+          </Card>
         ))}
       </div>
       <BottomNav role="ADMIN" />

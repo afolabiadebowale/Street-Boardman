@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 
 export default function Boardmen() {
   const [boardmen, setBoardmen] = useState([]);
@@ -23,27 +26,27 @@ export default function Boardmen() {
   return (
     <>
       <TopBar title="Boardmen" />
-      <div className="page">
+      <div className="px-4 pb-24 pt-4">
         {error && <div className="error-banner">{error}</div>}
         {boardmen.map((b) => (
-          <div key={b.id} className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Card key={b.id}>
+            <div className="flex justify-between">
               <strong>{b.user.fullName}</strong>
-              <span className={`badge ${b.approvalStatus === 'APPROVED' ? 'badge-open' : 'badge-pending'}`}>
+              <Badge variant={b.approvalStatus === 'APPROVED' ? 'open' : 'pending'}>
                 {b.approvalStatus}
-              </span>
+              </Badge>
             </div>
-            <p className="muted">{b.user.phone} · {b.businessLocation}</p>
+            <p className="text-sm text-muted">{b.user.phone} · {b.businessLocation}</p>
             {b.approvalStatus === 'PENDING_APPROVAL' && (
-              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                <button className="btn btn-primary" style={{ margin: 0 }} onClick={() => act(b.id, 'approve')}>Approve</button>
-                <button className="btn btn-danger" style={{ margin: 0 }} onClick={() => act(b.id, 'reject')}>Reject</button>
+              <div className="mt-2 flex gap-2">
+                <Button variant="primary" className="mb-0 flex-1" onClick={() => act(b.id, 'approve')}>Approve</Button>
+                <Button variant="destructive" className="mb-0 flex-1" onClick={() => act(b.id, 'reject')}>Reject</Button>
               </div>
             )}
             {b.approvalStatus === 'APPROVED' && (
-              <button className="btn btn-danger" style={{ marginTop: 8 }} onClick={() => act(b.id, 'suspend')}>Suspend</button>
+              <Button variant="destructive" className="mt-2" onClick={() => act(b.id, 'suspend')}>Suspend</Button>
             )}
-          </div>
+          </Card>
         ))}
       </div>
       <BottomNav role="ADMIN" />

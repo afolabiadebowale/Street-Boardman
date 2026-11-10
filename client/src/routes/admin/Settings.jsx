@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 
 export default function Settings() {
   const [settings, setSettings] = useState(null);
@@ -36,32 +39,32 @@ export default function Settings() {
     }
   };
 
-  if (!settings) return <div className="page">Loading...</div>;
+  if (!settings) return <div className="px-4 pb-24 pt-4">Loading...</div>;
 
   return (
     <>
       <TopBar title="System Settings" />
-      <div className="page">
-        <p className="muted">
+      <div className="px-4 pb-24 pt-4">
+        <p className="text-sm text-muted">
           These are platform-wide defaults. Changing them never rewrites commissions already calculated on
           past or in-flight competitions — each competition locks in the rates that were active when it was created.
         </p>
         {error && <div className="error-banner">{error}</div>}
         {message && <div className="success-banner">{message}</div>}
         <form onSubmit={onSave}>
-          <div className="field">
-            <label>Default Boardman commission (%)</label>
-            <input type="number" step="0.1" value={boardmanRate} onChange={(e) => setBoardmanRate(e.target.value)} />
+          <div className="mb-4">
+            <Label>Default Boardman commission (%)</Label>
+            <Input type="number" step="0.1" value={boardmanRate} onChange={(e) => setBoardmanRate(e.target.value)} />
           </div>
-          <div className="field">
-            <label>Platform commission (%)</label>
-            <input type="number" step="0.1" value={platformRate} onChange={(e) => setPlatformRate(e.target.value)} />
+          <div className="mb-4">
+            <Label>Platform commission (%)</Label>
+            <Input type="number" step="0.1" value={platformRate} onChange={(e) => setPlatformRate(e.target.value)} />
           </div>
-          <div className="field">
-            <label>Result confirmation window (hours)</label>
-            <input type="number" step="0.5" value={windowHours} onChange={(e) => setWindowHours(e.target.value)} />
+          <div className="mb-4">
+            <Label>Result confirmation window (hours)</Label>
+            <Input type="number" step="0.5" value={windowHours} onChange={(e) => setWindowHours(e.target.value)} />
           </div>
-          <button className="btn btn-primary" type="submit">Save Settings</button>
+          <Button variant="primary" type="submit">Save Settings</Button>
         </form>
       </div>
       <BottomNav role="ADMIN" />
