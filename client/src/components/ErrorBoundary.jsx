@@ -1,5 +1,7 @@
 import React from 'react';
 import { captureException } from '../errorTracking.js';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
 
 // Without this, any uncaught render error unmounts the whole tree and the
 // user is left staring at a blank white page with no way forward.
@@ -20,13 +22,13 @@ export default class ErrorBoundary extends React.Component {
   render() {
     if (!this.state.hasError) return this.props.children;
     return (
-      <div className="page card" role="alert">
+      <Card className="m-4 flex-1" role="alert">
         <h2>Something went wrong</h2>
-        <p className="muted">Your money and bets are safe. Please reload the page to continue.</p>
-        <button type="button" className="btn btn-primary" onClick={() => window.location.reload()}>
+        <p className="text-sm text-muted">Your money and bets are safe. Please reload the page to continue.</p>
+        <Button type="button" variant="primary" onClick={() => window.location.reload()}>
           Reload
-        </button>
-      </div>
+        </Button>
+      </Card>
     );
   }
 }

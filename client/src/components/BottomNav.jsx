@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 const NAV_ITEMS = {
   BETTER: [
@@ -26,9 +27,16 @@ const NAV_ITEMS = {
 export default function BottomNav({ role }) {
   const items = NAV_ITEMS[role] || [];
   return (
-    <nav className="bottom-nav">
+    <nav className="fixed bottom-0 left-1/2 flex w-full max-w-[480px] -translate-x-1/2 justify-around border-t border-border bg-surface px-1 pt-2 pb-[calc(8px+env(safe-area-inset-bottom))]">
       {items.map((item) => (
-        <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => (isActive ? 'active' : '')}>
+        <NavLink
+          key={item.to}
+          to={item.to}
+          end={item.end}
+          className={({ isActive }) =>
+            cn('flex-1 px-0.5 py-1.5 text-center text-[11px] text-muted no-underline', isActive && 'font-bold text-primary')
+          }
+        >
           {item.label}
         </NavLink>
       ))}
