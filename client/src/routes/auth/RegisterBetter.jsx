@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 
 export default function RegisterBetter() {
   const [fullName, setFullName] = useState('');
@@ -28,27 +31,27 @@ export default function RegisterBetter() {
   };
 
   return (
-    <div className="page">
+    <div className="px-4 pb-24 pt-4">
       <h1>Register as a Better</h1>
       {error && <div className="error-banner">{error}</div>}
       <form onSubmit={onSubmit}>
-        <div className="field">
-          <label>Full name</label>
-          <input value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+        <div className="mb-4">
+          <Label>Full name</Label>
+          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required />
         </div>
-        <div className="field">
-          <label>Phone number</label>
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" required />
+        <div className="mb-4">
+          <Label>Phone number</Label>
+          <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" required />
         </div>
-        <div className="field">
-          <label>Choose a PIN (4+ digits)</label>
-          <input value={pin} onChange={(e) => setPin(e.target.value)} type="password" required />
+        <div className="mb-4">
+          <Label>Choose a PIN (4+ digits)</Label>
+          <Input value={pin} onChange={(e) => setPin(e.target.value)} type="password" required />
         </div>
-        <button className="btn btn-primary" disabled={submitting} type="submit">
+        <Button variant="primary" disabled={submitting} type="submit">
           {submitting ? 'Creating account...' : 'Register'}
-        </button>
+        </Button>
       </form>
-      <p className="muted">
+      <p className="text-sm text-muted">
         Already registered? <Link to="/login">Log in</Link>
       </p>
     </div>
