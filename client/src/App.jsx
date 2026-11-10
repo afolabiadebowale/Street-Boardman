@@ -6,6 +6,7 @@ import Landing from './routes/auth/Landing';
 import Login from './routes/auth/Login';
 import RegisterBetter from './routes/auth/RegisterBetter';
 import RegisterBoardman from './routes/auth/RegisterBoardman';
+import SharedTicket from './routes/public/SharedTicket';
 
 // Each role's screens are one lazily loaded chunk: a bettor on mobile data
 // never downloads the Boardman or admin screens. Auth screens stay in the
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register/better" element={<RegisterBetter />} />
         <Route path="/register/boardman" element={<RegisterBoardman />} />
+        <Route path="/tickets/:token" element={<SharedTicket />} />
 
         <Route path="/better" element={<ProtectedRoute role="BETTER"><BetterHome /></ProtectedRoute>} />
         <Route path="/better/competitions" element={<ProtectedRoute role="BETTER"><Competitions /></ProtectedRoute>} />

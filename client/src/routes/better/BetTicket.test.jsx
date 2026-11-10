@@ -142,4 +142,43 @@ describe('BetTicket', () => {
     expect(await screen.findByText('This result can no longer be disputed')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Report a Problem' })).toBeInTheDocument());
   });
+
+  it('gets a shareable link for the ticket (FEAT-044)', async () => {
+    api.get.mockResolvedValueOnce({ bet: makeBet() });
+    api.post.mockResolvedValueOnce({ shareToken: 'tok123', path: '/tickets/tok123' });
+    renderTicket();
+
+    await screen.findByText('SB-000123');
+    fireEvent.click(screen.getByRole('button', { name: 'Get a shareable link' }));
+
+    expect(await screen.findByLabelText('Shareable link')).toHaveValue(`${window.location.origin}/tickets/tok123`);
+    expect(api.post).toHaveBeenCalledWith('/bets/SB-000123/share');
+  });
+
+  it('copies the shareable link to the clipboard', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+    api.get.mockResolvedValueOnce({ bet: makeBet() });
+    api.post.mockResolvedValueOnce({ shareToken: 'tok123', path: '/tickets/tok123' });
+    renderTicket();
+
+    await screen.findByText('SB-000123');
+    fireEvent.click(screen.getByRole('button', { name: 'Get a shareable link' }));
+    await screen.findByLabelText('Shareable link');
+    fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
+
+    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/tickets/tok123`);
+    expect(await screen.findByRole('button', { name: 'Copied!' })).toBeInTheDocument();
+  });
+
+  it('shows an error if getting the share link fails', async () => {
+    api.get.mockResolvedValueOnce({ bet: makeBet() });
+    api.post.mockRejectedValueOnce(new Error('Could not create a link right now'));
+    renderTicket();
+
+    await screen.findByText('SB-000123');
+    fireEvent.click(screen.getByRole('button', { name: 'Get a shareable link' }));
+
+    expect(await screen.findByText('Could not create a link right now')).toBeInTheDocument();
+  });
 });

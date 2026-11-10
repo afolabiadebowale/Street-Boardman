@@ -20,12 +20,39 @@ export default function BetTicket() {
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [shareError, setShareError] = useState('');
+  const [sharing, setSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const load = () => api.get(`/bets/${betCode}`).then((d) => setBet(d.bet));
 
   useEffect(() => {
     load();
   }, [betCode]);
+
+  const onShare = async () => {
+    setShareError('');
+    setSharing(true);
+    try {
+      const { path } = await api.post(`/bets/${betCode}/share`);
+      setShareUrl(`${window.location.origin}${path}`);
+    } catch (err) {
+      setShareError(err.message);
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+    } catch {
+      // Clipboard permission can be denied — the link is still selectable
+      // in the input, so this isn't fatal.
+    }
+  };
 
   const onRaiseDispute = async (e) => {
     e.preventDefault();
@@ -98,6 +125,25 @@ export default function BetTicket() {
             {DISPUTE_STATUS_MESSAGE[dispute.status] || `Dispute status: ${dispute.status}`}
           </div>
         )}
+
+        <div className="card" style={{ marginTop: 12 }}>
+          <h2>Share this ticket</h2>
+          <p className="muted">Anyone with the link can see what was bet and how it ended — never who placed it.</p>
+          {shareError && <div className="error-banner">{shareError}</div>}
+          {shareUrl ? (
+            <div className="field">
+              <label htmlFor="share-url">Shareable link</label>
+              <input id="share-url" value={shareUrl} readOnly onFocus={(e) => e.target.select()} />
+              <button className="btn btn-secondary" type="button" onClick={onCopy} style={{ marginTop: 8 }}>
+                {copied ? 'Copied!' : 'Copy link'}
+              </button>
+            </div>
+          ) : (
+            <button className="btn btn-secondary" type="button" onClick={onShare} disabled={sharing}>
+              {sharing ? 'Getting link...' : 'Get a shareable link'}
+            </button>
+          )}
+        </div>
 
         <Link to="/better/my-bets" className="btn btn-secondary">Back to My Bets</Link>
       </div>
