@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -9,6 +10,7 @@ import { cn } from '../../lib/utils';
 import { Page } from '../../components/ui/page';
 
 export default function Wallet() {
+  const { t } = useTranslation('better');
   const [wallet, setWallet] = useState(null);
   const [transactions, setTransactions] = useState([]);
 
@@ -19,28 +21,28 @@ export default function Wallet() {
 
   return (
     <>
-      <TopBar title="Wallet" />
+      <TopBar title={t('wallet.title')} />
       <Page>
         <Card>
-          <p className="text-sm text-muted">Balance</p>
+          <p className="text-sm text-muted">{t('wallet.balance')}</p>
           <p className="text-[22px] font-bold">₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</p>
         </Card>
-        <Button asChild variant="primary"><Link to="/better/deposit">Deposit</Link></Button>
-        <Button asChild variant="secondary"><Link to="/better/withdraw">Withdraw</Link></Button>
+        <Button asChild variant="primary"><Link to="/better/deposit">{t('wallet.deposit')}</Link></Button>
+        <Button asChild variant="secondary"><Link to="/better/withdraw">{t('wallet.withdraw')}</Link></Button>
 
-        <h2 className="mt-6">Recent activity</h2>
-        {transactions.map((t) => (
-          <Card key={t.id}>
+        <h2 className="mt-6">{t('wallet.recentActivity')}</h2>
+        {transactions.map((txn) => (
+          <Card key={txn.id}>
             <div className="flex justify-between">
-              <span>{t.type.replace('_', ' ')}</span>
-              <strong className={cn(Number(t.amount) >= 0 ? 'text-primary' : 'text-danger')}>
-                {Number(t.amount) >= 0 ? '+' : ''}₦{Number(t.amount).toLocaleString()}
+              <span>{txn.type.replace('_', ' ')}</span>
+              <strong className={cn(Number(txn.amount) >= 0 ? 'text-primary' : 'text-danger')}>
+                {Number(txn.amount) >= 0 ? '+' : ''}₦{Number(txn.amount).toLocaleString()}
               </strong>
             </div>
-            <p className="text-sm text-muted">{new Date(t.createdAt).toLocaleString()}</p>
+            <p className="text-sm text-muted">{new Date(txn.createdAt).toLocaleString()}</p>
           </Card>
         ))}
-        <Button asChild variant="secondary"><Link to="/better/transactions">Full transaction history</Link></Button>
+        <Button asChild variant="secondary"><Link to="/better/transactions">{t('wallet.fullHistory')}</Link></Button>
       </Page>
       <BottomNav role="BETTER" />
     </>

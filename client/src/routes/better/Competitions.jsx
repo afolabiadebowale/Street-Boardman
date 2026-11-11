@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -11,15 +12,16 @@ import { Page } from '../../components/ui/page';
 
 // Matches browseCompetitionsQuery's category enum (server/validators/schemas.js).
 const CATEGORIES = [
-  { value: '', label: 'All categories' },
-  { value: 'FOOTBALL', label: 'Football' },
-  { value: 'SNOOKER', label: 'Snooker' },
-  { value: 'FIGHT', label: 'Fight' },
-  { value: 'TABLE_GAME', label: 'Table game' },
-  { value: 'OTHER', label: 'Other' },
+  { value: '', labelKey: 'competitions.categories.all' },
+  { value: 'FOOTBALL', labelKey: 'competitions.categories.football' },
+  { value: 'SNOOKER', labelKey: 'competitions.categories.snooker' },
+  { value: 'FIGHT', labelKey: 'competitions.categories.fight' },
+  { value: 'TABLE_GAME', labelKey: 'competitions.categories.tableGame' },
+  { value: 'OTHER', labelKey: 'competitions.categories.other' },
 ];
 
 export default function Competitions() {
+  const { t } = useTranslation('better');
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
@@ -52,52 +54,52 @@ export default function Competitions() {
 
   return (
     <>
-      <TopBar title="Available Competitions" />
+      <TopBar title={t('competitions.title')} />
       <Page>
         <div className="mb-4">
-          <Label htmlFor="competition-search">Search</Label>
+          <Label htmlFor="competition-search">{t('competitions.searchLabel')}</Label>
           <Input
             id="competition-search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Team, player, or title"
+            placeholder={t('competitions.searchPlaceholder')}
           />
         </div>
         <div className="mb-4">
-          <Label htmlFor="competition-category">Category</Label>
+          <Label htmlFor="competition-category">{t('competitions.categoryLabel')}</Label>
           <Select id="competition-category" value={category} onChange={(e) => setCategory(e.target.value)}>
             {CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>{c.label}</option>
+              <option key={c.value} value={c.value}>{t(c.labelKey)}</option>
             ))}
           </Select>
         </div>
         <div className="mb-4">
-          <Label htmlFor="competition-location">Location</Label>
+          <Label htmlFor="competition-location">{t('competitions.locationLabel')}</Label>
           <Input
             id="competition-location"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g. Lagos"
+            placeholder={t('competitions.locationPlaceholder')}
           />
         </div>
 
-        {loading && <p role="status" className="text-sm text-muted">Loading...</p>}
+        {loading && <p role="status" className="text-sm text-muted">{t('common:loading')}</p>}
         {!loading && competitions.length === 0 && (
           <p className="text-sm text-muted">
-            {hasFilters ? 'No open competitions match your filters.' : 'No open competitions right now. Check back soon.'}
+            {hasFilters ? t('competitions.noneFiltered') : t('competitions.noneOpen')}
           </p>
         )}
         {competitions.map((c) => (
           <Card key={c.id} asChild className="text-inherit no-underline">
             <Link to={`/better/competitions/${c.id}`}>
-              <Badge variant="open">BETTING OPEN</Badge>
+              <Badge variant="open">{t('competitions.bettingOpen')}</Badge>
               <h2 className="mt-2">{c.title}</h2>
-              <p className="text-sm text-muted">{c.category} · Closes {new Date(c.bettingDeadline).toLocaleString()}</p>
-              <p className="text-sm text-muted">{c.betOptions.length} betting options · Pool ₦{Number(c.pool.totalPool).toLocaleString()}</p>
+              <p className="text-sm text-muted">{t('competitions.closes', { category: c.category, date: new Date(c.bettingDeadline).toLocaleString() })}</p>
+              <p className="text-sm text-muted">{t('competitions.poolInfo', { count: c.betOptions.length, pool: Number(c.pool.totalPool).toLocaleString() })}</p>
               {c.boardman && (
                 <p className="text-sm text-muted">
-                  Run by {c.boardman.name}
-                  {c.boardman.trustScore != null && <Badge variant="trust" className="ml-1.5">Trust {c.boardman.trustScore}</Badge>}
+                  {t('competitions.runBy', { name: c.boardman.name })}
+                  {c.boardman.trustScore != null && <Badge variant="trust" className="ml-1.5">{t('competitions.trust', { score: c.boardman.trustScore })}</Badge>}
                 </p>
               )}
               {c.pool.notices.map((n) => (

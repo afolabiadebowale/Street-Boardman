@@ -1,1 +1,146 @@
-{}
+{
+  "home": {
+    "title": "StreetBoardman",
+    "welcome": "Welcome, {{name}}",
+    "walletBalance": "Wallet balance",
+    "deposit": "Deposit",
+    "openCompetitions": "Open competitions",
+    "noneOpen": "No competitions open right now.",
+    "bettingCloses": "{{category}} · Betting closes {{date}}",
+    "seeAll": "See all competitions"
+  },
+  "competitions": {
+    "title": "Available Competitions",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Team, player, or title",
+    "categoryLabel": "Category",
+    "categories": {
+      "all": "All categories",
+      "football": "Football",
+      "snooker": "Snooker",
+      "fight": "Fight",
+      "tableGame": "Table game",
+      "other": "Other"
+    },
+    "locationLabel": "Location",
+    "locationPlaceholder": "e.g. Lagos",
+    "noneFiltered": "No open competitions match your filters.",
+    "noneOpen": "No open competitions right now. Check back soon.",
+    "bettingOpen": "BETTING OPEN",
+    "closes": "{{category}} · Closes {{date}}",
+    "poolInfo": "{{count}} betting options · Pool ₦{{pool}}",
+    "runBy": "Run by {{name}}",
+    "trust": "Trust {{score}}"
+  },
+  "competitionDetail": {
+    "closes": "{{category}} · Betting closes {{date}}",
+    "runBy": "Run by",
+    "poolSoFar": "Pool so far: ₦{{pool}}",
+    "trust": "Trust {{score}}",
+    "chooseBet": "Choose your bet",
+    "payoutPer100": "₦100 → ₦{{payout}}",
+    "stakeLabel": "Stake (₦)",
+    "stakePlaceholder": "e.g. 5000",
+    "reviewBet": "Review Bet",
+    "confirmTitle": "Confirm your bet",
+    "competition": "Competition",
+    "yourPick": "Your pick",
+    "stake": "Stake",
+    "estimatedPayout": "Estimated payout",
+    "estimateNotice": "Estimate only — the final payout depends on the pool when betting closes.",
+    "confirmBet": "Confirm Bet",
+    "placingBet": "Placing bet...",
+    "edit": "Edit"
+  },
+  "boardmanProfile": {
+    "title": "Boardman",
+    "memberSince": "Boardman since {{date}}",
+    "trust": "Trust {{score}}",
+    "noScoreYet": "New Boardman — not enough settled competitions yet for a trust score.",
+    "completed": "Completed competitions",
+    "disputed": "Disputed",
+    "overturned": "Results overturned",
+    "cancelled": "Cancelled by Boardman",
+    "totalStaked": "Total staked on completed competitions"
+  },
+  "myBets": {
+    "title": "My Bets",
+    "none": "You haven't placed any bets yet.",
+    "stake": "Stake: ₦{{amount}}"
+  },
+  "wallet": {
+    "title": "Wallet",
+    "balance": "Balance",
+    "deposit": "Deposit",
+    "withdraw": "Withdraw",
+    "recentActivity": "Recent activity",
+    "fullHistory": "Full transaction history"
+  },
+  "transactionHistory": {
+    "title": "Transaction History",
+    "downloadStatement": "Download a statement",
+    "monthLabel": "Month",
+    "downloadCsv": "Download CSV",
+    "none": "No transactions yet.",
+    "balanceAfter": "Balance after: ₦{{amount}}"
+  },
+  "deposit": {
+    "title": "Deposit",
+    "demoMode": "DEMO MODE",
+    "demoHint": "This adds test money to your wallet instantly. No real payment is taken.",
+    "amountLabel": "Amount (₦)",
+    "processing": "Processing...",
+    "submit": "Deposit",
+    "added": "₦{{amount}} added to your wallet."
+  },
+  "withdraw": {
+    "title": "Withdraw",
+    "amountLabel": "Amount (₦)",
+    "bankNameLabel": "Bank name",
+    "accountNumberLabel": "Account number",
+    "accountNameLabel": "Account name",
+    "pinLabel": "Your PIN",
+    "pinHint": "Re-enter your PIN to confirm. This keeps your money safe if someone else has your phone.",
+    "requesting": "Requesting...",
+    "submit": "Request Withdrawal",
+    "requested": "Withdrawal requested. It will be processed shortly."
+  },
+  "profile": {
+    "title": "Profile",
+    "fullName": "Full name",
+    "phoneNumber": "Phone number",
+    "accountStatus": "Account status",
+    "needHelp": "Need help?",
+    "helpText": "Contact support through your Boardman, or reach the platform support line listed in the app footer."
+  },
+  "betTicket": {
+    "title": "Bet Ticket",
+    "betId": "BET ID",
+    "competition": "Competition",
+    "selection": "Selection",
+    "stake": "Stake",
+    "estimatedPayout": "Estimated payout",
+    "status": "Status",
+    "payoutNotice": "The estimated payout can change until betting closes — it depends on how much everyone else stakes. Your final winnings are confirmed once the result is settled.",
+    "disputeTitle": "See a problem with this result?",
+    "disputeHint": "The Boardman has submitted a result. If you think it's wrong, report it now — once an Admin reviews it, no automatic payout happens until they decide.",
+    "reasonLabel": "What's wrong?",
+    "reporting": "Reporting...",
+    "reportProblem": "Report a Problem",
+    "disputeStatus": {
+      "OPEN": "Dispute raised. Payouts are frozen until a Platform Admin reviews it.",
+      "UNDER_REVIEW": "A Platform Admin is reviewing this dispute. Payouts stay frozen until they decide.",
+      "RESOLVED_CONFIRMED": "An Admin reviewed this dispute and confirmed the result — payouts have been processed.",
+      "RESOLVED_CANCELLED": "An Admin reviewed this dispute and cancelled the competition — your stake was refunded."
+    },
+    "disputeStatusFallback": "Dispute status: {{status}}",
+    "shareTitle": "Share this ticket",
+    "shareHint": "Anyone with the link can see what was bet and how it ended — never who placed it.",
+    "shareableLinkLabel": "Shareable link",
+    "copied": "Copied!",
+    "copyLink": "Copy link",
+    "gettingLink": "Getting link...",
+    "getLink": "Get a shareable link",
+    "backToMyBets": "Back to My Bets"
+  }
+}

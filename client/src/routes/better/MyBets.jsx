@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -16,6 +17,7 @@ const STATUS_BADGE = {
 };
 
 export default function MyBets() {
+  const { t } = useTranslation('better');
   const [bets, setBets] = useState([]);
 
   useEffect(() => {
@@ -24,9 +26,9 @@ export default function MyBets() {
 
   return (
     <>
-      <TopBar title="My Bets" />
+      <TopBar title={t('myBets.title')} />
       <Page>
-        {bets.length === 0 && <p className="text-sm text-muted">You haven't placed any bets yet.</p>}
+        {bets.length === 0 && <p className="text-sm text-muted">{t('myBets.none')}</p>}
         {bets.map((bet) => (
           <Card key={bet.id} asChild className="text-inherit no-underline">
             <Link to={`/better/my-bets/${bet.betCode}`}>
@@ -35,7 +37,7 @@ export default function MyBets() {
                 <Badge variant={STATUS_BADGE[bet.status]}>{bet.status}</Badge>
               </div>
               <p className="text-sm text-muted">{bet.betOption.competition.title} — {bet.betOption.label}</p>
-              <p>Stake: ₦{Number(bet.stake).toLocaleString()}</p>
+              <p>{t('myBets.stake', { amount: Number(bet.stake).toLocaleString() })}</p>
             </Link>
           </Card>
         ))}

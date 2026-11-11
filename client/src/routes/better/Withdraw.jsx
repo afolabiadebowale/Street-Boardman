@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -9,6 +10,7 @@ import { Label } from '../../components/ui/label';
 import { Page } from '../../components/ui/page';
 
 export default function Withdraw() {
+  const { t } = useTranslation('better');
   const [amount, setAmount] = useState('');
   const [bankName, setBankName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
@@ -29,7 +31,7 @@ export default function Withdraw() {
         pin,
         destination: { bankName, accountNumber, accountName },
       });
-      setSuccess('Withdrawal requested. It will be processed shortly.');
+      setSuccess(t('withdraw.requested'));
       setTimeout(() => navigate('/better/wallet'), 1200);
     } catch (err) {
       setError(err.message);
@@ -41,34 +43,34 @@ export default function Withdraw() {
 
   return (
     <>
-      <TopBar title="Withdraw" />
+      <TopBar title={t('withdraw.title')} />
       <Page>
         {error && <div className="error-banner" role="alert">{error}</div>}
         {success && <div className="success-banner" role="status">{success}</div>}
         <form onSubmit={onSubmit}>
           <div className="mb-4">
-            <Label htmlFor="withdraw-amount">Amount (₦)</Label>
+            <Label htmlFor="withdraw-amount">{t('withdraw.amountLabel')}</Label>
             <Input id="withdraw-amount" type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
           </div>
           <div className="mb-4">
-            <Label htmlFor="withdraw-bank-name">Bank name</Label>
+            <Label htmlFor="withdraw-bank-name">{t('withdraw.bankNameLabel')}</Label>
             <Input id="withdraw-bank-name" value={bankName} onChange={(e) => setBankName(e.target.value)} required />
           </div>
           <div className="mb-4">
-            <Label htmlFor="withdraw-account-number">Account number</Label>
+            <Label htmlFor="withdraw-account-number">{t('withdraw.accountNumberLabel')}</Label>
             <Input id="withdraw-account-number" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} required />
           </div>
           <div className="mb-4">
-            <Label htmlFor="withdraw-account-name">Account name</Label>
+            <Label htmlFor="withdraw-account-name">{t('withdraw.accountNameLabel')}</Label>
             <Input id="withdraw-account-name" value={accountName} onChange={(e) => setAccountName(e.target.value)} required />
           </div>
           <div className="mb-4">
-            <Label htmlFor="withdraw-pin">Your PIN</Label>
+            <Label htmlFor="withdraw-pin">{t('withdraw.pinLabel')}</Label>
             <Input id="withdraw-pin" type="password" inputMode="numeric" autoComplete="current-password" value={pin} onChange={(e) => setPin(e.target.value)} required />
-            <p className="text-sm text-muted">Re-enter your PIN to confirm. This keeps your money safe if someone else has your phone.</p>
+            <p className="text-sm text-muted">{t('withdraw.pinHint')}</p>
           </div>
           <Button variant="primary" type="submit" disabled={submitting}>
-            {submitting ? 'Requesting...' : 'Request Withdrawal'}
+            {submitting ? t('withdraw.requesting') : t('withdraw.submit')}
           </Button>
         </form>
       </Page>
