@@ -5,6 +5,7 @@ import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { initErrorTracking } from './errorTracking.js';
+import './i18n.js';
 import './styles.css';
 
 initErrorTracking();
