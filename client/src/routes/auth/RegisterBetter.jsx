@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/button';
@@ -8,6 +9,7 @@ import { Label } from '../../components/ui/label';
 import { Page } from '../../components/ui/page';
 
 export default function RegisterBetter() {
+  const { t } = useTranslation('auth');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [pin, setPin] = useState('');
@@ -33,27 +35,27 @@ export default function RegisterBetter() {
 
   return (
     <Page>
-      <h1>Register as a Better</h1>
+      <h1>{t('registerBetter.title')}</h1>
       {error && <div className="error-banner" role="alert">{error}</div>}
       <form onSubmit={onSubmit}>
         <div className="mb-4">
-          <Label htmlFor="reg-better-name">Full name</Label>
+          <Label htmlFor="reg-better-name">{t('registerBetter.nameLabel')}</Label>
           <Input id="reg-better-name" value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" required />
         </div>
         <div className="mb-4">
-          <Label htmlFor="reg-better-phone">Phone number</Label>
+          <Label htmlFor="reg-better-phone">{t('registerBetter.phoneLabel')}</Label>
           <Input id="reg-better-phone" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" required />
         </div>
         <div className="mb-4">
-          <Label htmlFor="reg-better-pin">Choose a PIN (4+ digits)</Label>
+          <Label htmlFor="reg-better-pin">{t('registerBetter.pinLabel')}</Label>
           <Input id="reg-better-pin" value={pin} onChange={(e) => setPin(e.target.value)} type="password" autoComplete="new-password" required />
         </div>
         <Button variant="primary" disabled={submitting} type="submit">
-          {submitting ? 'Creating account...' : 'Register'}
+          {submitting ? t('registerBetter.submitting') : t('registerBetter.submit')}
         </Button>
       </form>
       <p className="text-sm text-muted">
-        Already registered? <Link to="/login">Log in</Link>
+        {t('registerBetter.alreadyRegistered')} <Link to="/login">{t('registerBetter.login')}</Link>
       </p>
     </Page>
   );

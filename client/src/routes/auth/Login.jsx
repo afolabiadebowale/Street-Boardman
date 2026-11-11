@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/button';
@@ -14,6 +15,7 @@ function homeFor(role) {
 }
 
 export default function Login() {
+  const { t } = useTranslation('auth');
   const [phone, setPhone] = useState('');
   const [pin, setPin] = useState('');
   // Set when the server says this account needs a second factor (TASK-031):
@@ -78,12 +80,12 @@ export default function Login() {
   if (mfaToken) {
     return (
       <Page>
-        <h1>Enter your code</h1>
-        <p className="text-sm text-muted">Open your authenticator app and enter the 6-digit code for StreetBoardman.</p>
+        <h1>{t('login.mfaTitle')}</h1>
+        <p className="text-sm text-muted">{t('login.mfaHint')}</p>
         {error && <div className="error-banner" role="alert">{error}</div>}
         <form onSubmit={onSubmitCode}>
           <div className="mb-4">
-            <Label htmlFor="mfa-code">Authentication code</Label>
+            <Label htmlFor="mfa-code">{t('login.codeLabel')}</Label>
             <Input
               id="mfa-code"
               value={code}
@@ -97,12 +99,12 @@ export default function Login() {
             />
           </div>
           <Button variant="primary" disabled={submitting || code.length !== 6} type="submit">
-            {submitting ? 'Verifying...' : 'Verify'}
+            {submitting ? t('login.verifying') : t('login.verify')}
           </Button>
         </form>
         <p className="text-sm text-muted">
           <Button type="button" variant="secondary" onClick={startOver}>
-            Back to login
+            {t('login.backToLogin')}
           </Button>
         </p>
       </Page>
@@ -111,23 +113,23 @@ export default function Login() {
 
   return (
     <Page>
-      <h1>Log In</h1>
+      <h1>{t('login.title')}</h1>
       {error && <div className="error-banner" role="alert">{error}</div>}
       <form onSubmit={onSubmitPin}>
         <div className="mb-4">
-          <Label htmlFor="login-phone">Phone number</Label>
+          <Label htmlFor="login-phone">{t('login.phoneLabel')}</Label>
           <Input id="login-phone" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" required />
         </div>
         <div className="mb-4">
-          <Label htmlFor="login-pin">PIN / Password</Label>
+          <Label htmlFor="login-pin">{t('login.pinLabel')}</Label>
           <Input id="login-pin" value={pin} onChange={(e) => setPin(e.target.value)} type="password" autoComplete="current-password" required />
         </div>
         <Button variant="primary" disabled={submitting} type="submit">
-          {submitting ? 'Logging in...' : 'Log In'}
+          {submitting ? t('login.submitting') : t('login.submit')}
         </Button>
       </form>
       <p className="text-sm text-muted">
-        No account? <Link to="/">Register</Link>
+        {t('login.noAccount')} <Link to="/">{t('login.register')}</Link>
       </p>
     </Page>
   );
