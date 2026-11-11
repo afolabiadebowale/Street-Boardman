@@ -27,7 +27,10 @@ const NAV_ITEMS = {
 export default function BottomNav({ role }) {
   const items = NAV_ITEMS[role] || [];
   return (
-    <nav className="fixed bottom-0 left-1/2 flex w-full max-w-[480px] -translate-x-1/2 justify-around border-t border-border bg-surface px-1 pt-2 pb-[calc(8px+env(safe-area-inset-bottom))]">
+    // FEAT-050: these breakpoints must match client/index.html's #root
+    // shell width exactly — this bar is position:fixed, a sibling (not a
+    // descendant) of #root's content, so it can't inherit that width.
+    <nav className="fixed bottom-0 left-1/2 flex w-full max-w-[480px] -translate-x-1/2 justify-around border-t border-border bg-surface px-1 pt-2 pb-[calc(8px+env(safe-area-inset-bottom))] sm:max-w-[640px] md:max-w-[760px] lg:max-w-[880px]">
       {items.map((item) => (
         <NavLink
           key={item.to}

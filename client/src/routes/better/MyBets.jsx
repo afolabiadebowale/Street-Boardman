@@ -5,6 +5,7 @@ import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
+import { Page } from '../../components/ui/page';
 
 const STATUS_BADGE = {
   OPEN: 'pending',
@@ -24,7 +25,7 @@ export default function MyBets() {
   return (
     <>
       <TopBar title="My Bets" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         {bets.length === 0 && <p className="text-sm text-muted">You haven't placed any bets yet.</p>}
         {bets.map((bet) => (
           <Card key={bet.id} asChild className="text-inherit no-underline">
@@ -38,7 +39,7 @@ export default function MyBets() {
             </Link>
           </Card>
         ))}
-      </div>
+      </Page>
       <BottomNav role="BETTER" />
     </>
   );

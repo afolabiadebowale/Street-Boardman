@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Page } from '../../components/ui/page';
 
 export default function Deposit() {
   const [amount, setAmount] = useState('');
@@ -33,7 +34,7 @@ export default function Deposit() {
   return (
     <>
       <TopBar title="Deposit" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <Card>
           <strong>DEMO MODE</strong>
           <p className="text-sm text-muted">This adds test money to your wallet instantly. No real payment is taken.</p>
@@ -49,7 +50,7 @@ export default function Deposit() {
             {submitting ? 'Processing...' : 'Deposit'}
           </Button>
         </form>
-      </div>
+      </Page>
       <BottomNav role="BETTER" />
     </>
   );

@@ -5,6 +5,7 @@ import BottomNav from '../../components/BottomNav';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
+import { Page } from '../../components/ui/page';
 
 export default function Boardmen() {
   const [boardmen, setBoardmen] = useState([]);
@@ -26,7 +27,7 @@ export default function Boardmen() {
   return (
     <>
       <TopBar title="Boardmen" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         {error && <div className="error-banner">{error}</div>}
         {boardmen.map((b) => (
           <Card key={b.id}>
@@ -48,7 +49,7 @@ export default function Boardmen() {
             )}
           </Card>
         ))}
-      </div>
+      </Page>
       <BottomNav role="ADMIN" />
     </>
   );

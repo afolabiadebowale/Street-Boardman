@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/card';
 import { Input, Textarea } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Badge } from '../../components/ui/badge';
+import { Page } from '../../components/ui/page';
 
 export default function CompetitionManage() {
   const { id } = useParams();
@@ -54,12 +55,12 @@ export default function CompetitionManage() {
     }
   };
 
-  if (!competition) return <div className="px-4 pb-24 pt-4">Loading...</div>;
+  if (!competition) return <Page>Loading...</Page>;
 
   return (
     <>
       <TopBar title={competition.title} />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <Badge variant="open">{competition.status.replace('_', ' ')}</Badge>
         <p className="mt-2 text-sm text-muted">
           Betting deadline: {new Date(competition.bettingDeadline).toLocaleString()}
@@ -135,7 +136,7 @@ export default function CompetitionManage() {
             <p className="text-sm text-muted">{bet.betOption.label} · {bet.betCode}</p>
           </Card>
         ))}
-      </div>
+      </Page>
       <BottomNav role="BOARDMAN" />
     </>
   );

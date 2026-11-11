@@ -6,6 +6,7 @@ import BottomNav from '../../components/BottomNav';
 import { Button } from '../../components/ui/button';
 import { Input, Select, Textarea } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Page } from '../../components/ui/page';
 
 const CATEGORIES = ['FOOTBALL', 'SNOOKER', 'FIGHT', 'TABLE_GAME', 'OTHER'];
 
@@ -51,7 +52,7 @@ export default function CreateCompetition() {
   return (
     <>
       <TopBar title="Create Competition" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         {error && <div className="error-banner">{error}</div>}
         <form onSubmit={onSubmit}>
           <div className="mb-4">
@@ -84,7 +85,7 @@ export default function CreateCompetition() {
             {submitting ? 'Creating...' : 'Create Competition'}
           </Button>
         </form>
-      </div>
+      </Page>
       <BottomNav role="BOARDMAN" />
     </>
   );

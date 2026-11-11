@@ -6,6 +6,7 @@ import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
+import { Page } from '../../components/ui/page';
 
 // During the grace period, says exactly what's missing and the date admin
 // tools lock. After it, ProtectedRoute redirects to /admin/security instead.
@@ -34,12 +35,12 @@ export default function AdminOverview() {
     api.get('/admin/overview').then(setOverview);
   }, []);
 
-  if (!overview) return <div className="px-4 pb-24 pt-4">Loading...</div>;
+  if (!overview) return <Page>Loading...</Page>;
 
   return (
     <>
       <TopBar title="Platform Overview" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <StaffSecurityBanner gate={user?.staffSecurity} />
         <Card>
           <p className="text-sm text-muted">Platform revenue (commission wallet)</p>
@@ -56,7 +57,7 @@ export default function AdminOverview() {
         <Button asChild variant="secondary"><Link to="/admin/ledger">Financial Ledger</Link></Button>
         <Button asChild variant="secondary"><Link to="/admin/audit-logs">Audit Logs</Link></Button>
         <Button asChild variant="secondary"><Link to="/admin/security">Account Security</Link></Button>
-      </div>
+      </Page>
       <BottomNav role="ADMIN" />
     </>
   );

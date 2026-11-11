@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Page } from '../../components/ui/page';
 
 export default function RegisterBetter() {
   const [fullName, setFullName] = useState('');
@@ -31,7 +32,7 @@ export default function RegisterBetter() {
   };
 
   return (
-    <div className="px-4 pb-24 pt-4">
+    <Page>
       <h1>Register as a Better</h1>
       {error && <div className="error-banner">{error}</div>}
       <form onSubmit={onSubmit}>
@@ -54,6 +55,6 @@ export default function RegisterBetter() {
       <p className="text-sm text-muted">
         Already registered? <Link to="/login">Log in</Link>
       </p>
-    </div>
+    </Page>
   );
 }

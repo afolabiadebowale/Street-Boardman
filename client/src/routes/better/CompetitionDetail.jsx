@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Badge } from '../../components/ui/badge';
+import { Page } from '../../components/ui/page';
 
 export default function CompetitionDetail() {
   const { id } = useParams();
@@ -45,7 +46,7 @@ export default function CompetitionDetail() {
     }
   };
 
-  if (!competition) return <div className="px-4 pb-24 pt-4">Loading...</div>;
+  if (!competition) return <Page>Loading...</Page>;
 
   const selectedOption = competition.betOptions.find((o) => o.id === selectedOptionId);
   const selectedOdds = competition.pool.options.find((o) => o.id === selectedOptionId);
@@ -57,7 +58,7 @@ export default function CompetitionDetail() {
     return (
       <>
         <TopBar title={competition.title} />
-        <div className="px-4 pb-24 pt-4">
+        <Page>
           <h2>Confirm your bet</h2>
           {error && <div className="error-banner">{error}</div>}
           <Card>
@@ -75,7 +76,7 @@ export default function CompetitionDetail() {
           <Button variant="secondary" type="button" onClick={() => setReviewing(false)} disabled={submitting} className="mt-2">
             Edit
           </Button>
-        </div>
+        </Page>
         <BottomNav role="BETTER" />
       </>
     );
@@ -84,7 +85,7 @@ export default function CompetitionDetail() {
   return (
     <>
       <TopBar title={competition.title} />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <p className="text-sm text-muted">{competition.category} · Betting closes {new Date(competition.bettingDeadline).toLocaleString()}</p>
         {competition.description && <p>{competition.description}</p>}
         {competition.boardman && (
@@ -136,7 +137,7 @@ export default function CompetitionDetail() {
             Review Bet
           </Button>
         </form>
-      </div>
+      </Page>
       <BottomNav role="BETTER" />
     </>
   );

@@ -7,6 +7,7 @@ import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { cn } from '../../lib/utils';
+import { Page } from '../../components/ui/page';
 
 // Server validates this is a real, already-started month (statementService.monthBounds)
 // — so the picker can't default past that.
@@ -28,7 +29,7 @@ export default function TransactionHistory() {
   return (
     <>
       <TopBar title="Transaction History" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <Card>
           <h2>Download a statement</h2>
           <div className="mb-4">
@@ -64,7 +65,7 @@ export default function TransactionHistory() {
             <p className="text-sm text-muted">{new Date(t.createdAt).toLocaleString()}</p>
           </Card>
         ))}
-      </div>
+      </Page>
       <BottomNav role="BETTER" />
     </>
   );

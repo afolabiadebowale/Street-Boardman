@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Page } from '../../components/ui/page';
 
 export default function RegisterBoardman() {
   const [fullName, setFullName] = useState('');
@@ -34,7 +35,7 @@ export default function RegisterBoardman() {
   };
 
   return (
-    <div className="px-4 pb-24 pt-4">
+    <Page>
       <h1>Become a Boardman</h1>
       <p className="text-sm text-muted">
         New Boardman accounts start as PENDING_APPROVAL. An Admin reviews and approves you before you can run
@@ -71,6 +72,6 @@ export default function RegisterBoardman() {
       <p className="text-sm text-muted">
         Already registered? <Link to="/login">Log in</Link>
       </p>
-    </div>
+    </Page>
   );
 }

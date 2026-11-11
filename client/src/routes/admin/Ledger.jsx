@@ -3,6 +3,7 @@ import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
 import { Card } from '../../components/ui/card';
+import { Page } from '../../components/ui/page';
 
 export default function Ledger() {
   const [transactions, setTransactions] = useState([]);
@@ -14,7 +15,7 @@ export default function Ledger() {
   return (
     <>
       <TopBar title="Financial Ledger" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         {transactions.map((t) => (
           <Card key={t.id}>
             <div className="flex justify-between">
@@ -25,7 +26,7 @@ export default function Ledger() {
             <p className="text-sm text-muted">{new Date(t.createdAt).toLocaleString()}</p>
           </Card>
         ))}
-      </div>
+      </Page>
       <BottomNav role="ADMIN" />
     </>
   );

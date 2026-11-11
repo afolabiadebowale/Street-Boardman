@@ -10,7 +10,12 @@
     <title>StreetBoardman</title>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- FEAT-050: shell width, wider than Page's content-column breakpoints
+         (client/src/components/ui/page.jsx) so there's a visible gutter
+         beside the content once screens widen. BottomNav.jsx must track
+         the same four numbers — it's a fixed sibling, not a descendant,
+         of this element, so it can't inherit this width. -->
+    <div id="root" class="mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-bg sm:max-w-[640px] md:max-w-[760px] lg:max-w-[880px]"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

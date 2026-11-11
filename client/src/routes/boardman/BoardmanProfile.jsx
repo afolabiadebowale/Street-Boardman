@@ -2,6 +2,7 @@ import { useAuth } from '../../context/AuthContext';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
 import { Card } from '../../components/ui/card';
+import { Page } from '../../components/ui/page';
 
 export default function BoardmanProfile() {
   const { user, boardmanProfile } = useAuth();
@@ -9,7 +10,7 @@ export default function BoardmanProfile() {
   return (
     <>
       <TopBar title="Boardman Profile" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <Card>
           <p className="text-sm text-muted">Full name</p>
           <strong>{user?.fullName}</strong>
@@ -32,7 +33,7 @@ export default function BoardmanProfile() {
             <strong>{(boardmanProfile.commissionRateOverride * 100).toFixed(1)}%</strong>
           </Card>
         )}
-      </div>
+      </Page>
       <BottomNav role="BOARDMAN" />
     </>
   );

@@ -4,6 +4,7 @@ import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
+import { Page } from '../../components/ui/page';
 
 export default function AdminCompetitions() {
   const [competitions, setCompetitions] = useState([]);
@@ -15,7 +16,7 @@ export default function AdminCompetitions() {
   return (
     <>
       <TopBar title="All Competitions" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         {competitions.map((c) => (
           <Card key={c.id}>
             <div className="flex justify-between">
@@ -26,7 +27,7 @@ export default function AdminCompetitions() {
             <p className="text-sm text-muted">{c.category} · Closes {new Date(c.bettingDeadline).toLocaleString()}</p>
           </Card>
         ))}
-      </div>
+      </Page>
       <BottomNav role="ADMIN" />
     </>
   );

@@ -5,6 +5,7 @@ import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
+import { Page } from '../../components/ui/page';
 
 export default function ActiveCompetitions() {
   const [competitions, setCompetitions] = useState([]);
@@ -16,7 +17,7 @@ export default function ActiveCompetitions() {
   return (
     <>
       <TopBar title="My Competitions" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         {competitions.length === 0 && <p className="text-sm text-muted">You haven't created any competitions yet.</p>}
         {competitions.map((c) => (
           <Card key={c.id} asChild className="text-inherit no-underline">
@@ -29,7 +30,7 @@ export default function ActiveCompetitions() {
             </Link>
           </Card>
         ))}
-      </div>
+      </Page>
       <BottomNav role="BOARDMAN" />
     </>
   );

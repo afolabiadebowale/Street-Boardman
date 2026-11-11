@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Page } from '../../components/ui/page';
 
 function CodeInput({ value, onChange, id }) {
   return (
@@ -142,7 +143,7 @@ export default function Security() {
   return (
     <>
       <TopBar title="Account Security" />
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         {gated && (
           <div className="error-banner">
             Admin tools are locked until you{' '}
@@ -218,7 +219,7 @@ export default function Security() {
             setNotice('Password changed. You have been signed out everywhere else.');
           }}
         />
-      </div>
+      </Page>
       <BottomNav role="ADMIN" />
     </>
   );

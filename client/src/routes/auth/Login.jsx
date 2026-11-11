@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Page } from '../../components/ui/page';
 
 function homeFor(role) {
   if (role === 'ADMIN') return '/admin';
@@ -76,7 +77,7 @@ export default function Login() {
 
   if (mfaToken) {
     return (
-      <div className="px-4 pb-24 pt-4">
+      <Page>
         <h1>Enter your code</h1>
         <p className="text-sm text-muted">Open your authenticator app and enter the 6-digit code for StreetBoardman.</p>
         {error && <div className="error-banner">{error}</div>}
@@ -104,12 +105,12 @@ export default function Login() {
             Back to login
           </Button>
         </p>
-      </div>
+      </Page>
     );
   }
 
   return (
-    <div className="px-4 pb-24 pt-4">
+    <Page>
       <h1>Log In</h1>
       {error && <div className="error-banner">{error}</div>}
       <form onSubmit={onSubmitPin}>
@@ -128,6 +129,6 @@ export default function Login() {
       <p className="text-sm text-muted">
         No account? <Link to="/">Register</Link>
       </p>
-    </div>
+    </Page>
   );
 }
