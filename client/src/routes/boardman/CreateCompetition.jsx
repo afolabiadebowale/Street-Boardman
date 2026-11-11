@@ -53,33 +53,33 @@ export default function CreateCompetition() {
     <>
       <TopBar title="Create Competition" />
       <Page>
-        {error && <div className="error-banner">{error}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
         <form onSubmit={onSubmit}>
           <div className="mb-4">
-            <Label>Title</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Tunde vs Seyi" required />
+            <Label htmlFor="comp-title">Title</Label>
+            <Input id="comp-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Tunde vs Seyi" required />
           </div>
           <div className="mb-4">
-            <Label>Category</Label>
-            <Select value={category} onChange={(e) => setCategory(e.target.value)}>
+            <Label htmlFor="comp-category">Category</Label>
+            <Select id="comp-category" value={category} onChange={(e) => setCategory(e.target.value)}>
               {CATEGORIES.map((c) => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
             </Select>
           </div>
           <div className="mb-4">
-            <Label>Participant A</Label>
-            <Input value={participantA} onChange={(e) => setParticipantA(e.target.value)} placeholder="e.g. Tunde" required />
+            <Label htmlFor="comp-participant-a">Participant A</Label>
+            <Input id="comp-participant-a" value={participantA} onChange={(e) => setParticipantA(e.target.value)} placeholder="e.g. Tunde" required />
           </div>
           <div className="mb-4">
-            <Label>Participant B</Label>
-            <Input value={participantB} onChange={(e) => setParticipantB(e.target.value)} placeholder="e.g. Seyi" required />
+            <Label htmlFor="comp-participant-b">Participant B</Label>
+            <Input id="comp-participant-b" value={participantB} onChange={(e) => setParticipantB(e.target.value)} placeholder="e.g. Seyi" required />
           </div>
           <div className="mb-4">
-            <Label>Betting deadline</Label>
-            <Input type="datetime-local" value={bettingDeadline} onChange={(e) => setBettingDeadline(e.target.value)} required />
+            <Label htmlFor="comp-deadline">Betting deadline</Label>
+            <Input id="comp-deadline" type="datetime-local" value={bettingDeadline} onChange={(e) => setBettingDeadline(e.target.value)} required />
           </div>
           <div className="mb-4">
-            <Label>Notes (optional)</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+            <Label htmlFor="comp-notes">Notes (optional)</Label>
+            <Textarea id="comp-notes" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
           </div>
           <Button variant="primary" type="submit" disabled={submitting}>
             {submitting ? 'Creating...' : 'Create Competition'}

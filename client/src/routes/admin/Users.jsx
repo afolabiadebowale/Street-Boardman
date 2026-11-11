@@ -28,7 +28,7 @@ export default function Users() {
     <>
       <TopBar title="Users" />
       <Page>
-        {error && <div className="error-banner">{error}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
         {users.map((u) => (
           <Card key={u.id}>
             <div className="flex justify-between">

@@ -20,7 +20,7 @@ export default function Revenue() {
       <Page>
         <Card>
           <p className="text-sm text-muted">Total commission earned</p>
-          <h1>₦{total.toLocaleString()}</h1>
+          <p className="text-[22px] font-bold">₦{total.toLocaleString()}</p>
         </Card>
         <h2>Commission history</h2>
         {transactions.length === 0 && <p className="text-sm text-muted">No commission earned yet — it lands here once a competition is completed.</p>}

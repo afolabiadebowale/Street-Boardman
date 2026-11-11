@@ -6,7 +6,9 @@ import { cn } from '../../lib/utils';
 // comments there for why they can't just read this component's classes.
 export function Page({ className, ...props }) {
   return (
-    <div
+    <main
+      id="main-content"
+      tabIndex={-1}
       className={cn(
         'mx-auto w-full max-w-[480px] px-4 pb-24 pt-4 sm:max-w-[560px] md:max-w-[640px] lg:max-w-[720px]',
         className

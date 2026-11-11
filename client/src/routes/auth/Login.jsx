@@ -80,7 +80,7 @@ export default function Login() {
       <Page>
         <h1>Enter your code</h1>
         <p className="text-sm text-muted">Open your authenticator app and enter the 6-digit code for StreetBoardman.</p>
-        {error && <div className="error-banner">{error}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
         <form onSubmit={onSubmitCode}>
           <div className="mb-4">
             <Label htmlFor="mfa-code">Authentication code</Label>
@@ -112,15 +112,15 @@ export default function Login() {
   return (
     <Page>
       <h1>Log In</h1>
-      {error && <div className="error-banner">{error}</div>}
+      {error && <div className="error-banner" role="alert">{error}</div>}
       <form onSubmit={onSubmitPin}>
         <div className="mb-4">
-          <Label>Phone number</Label>
-          <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" required />
+          <Label htmlFor="login-phone">Phone number</Label>
+          <Input id="login-phone" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" required />
         </div>
         <div className="mb-4">
-          <Label>PIN / Password</Label>
-          <Input value={pin} onChange={(e) => setPin(e.target.value)} type="password" required />
+          <Label htmlFor="login-pin">PIN / Password</Label>
+          <Input id="login-pin" value={pin} onChange={(e) => setPin(e.target.value)} type="password" autoComplete="current-password" required />
         </div>
         <Button variant="primary" disabled={submitting} type="submit">
           {submitting ? 'Logging in...' : 'Log In'}

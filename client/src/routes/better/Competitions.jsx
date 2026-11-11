@@ -81,7 +81,7 @@ export default function Competitions() {
           />
         </div>
 
-        {loading && <p className="text-sm text-muted">Loading...</p>}
+        {loading && <p role="status" className="text-sm text-muted">Loading...</p>}
         {!loading && competitions.length === 0 && (
           <p className="text-sm text-muted">
             {hasFilters ? 'No open competitions match your filters.' : 'No open competitions right now. Check back soon.'}

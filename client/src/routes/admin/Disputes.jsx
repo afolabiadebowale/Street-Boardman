@@ -28,7 +28,7 @@ export default function Disputes() {
     <>
       <TopBar title="Disputes" />
       <Page>
-        {error && <div className="error-banner">{error}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
         {disputes.length === 0 && <p className="text-sm text-muted">No disputes.</p>}
         {disputes.map((d) => (
           <Card key={d.id} data-testid="dispute-card">

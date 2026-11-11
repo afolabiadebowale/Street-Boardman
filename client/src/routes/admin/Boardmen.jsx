@@ -28,7 +28,7 @@ export default function Boardmen() {
     <>
       <TopBar title="Boardmen" />
       <Page>
-        {error && <div className="error-banner">{error}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
         {boardmen.map((b) => (
           <Card key={b.id}>
             <div className="flex justify-between">

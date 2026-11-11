@@ -39,12 +39,12 @@ export default function Deposit() {
           <strong>DEMO MODE</strong>
           <p className="text-sm text-muted">This adds test money to your wallet instantly. No real payment is taken.</p>
         </Card>
-        {error && <div className="error-banner">{error}</div>}
-        {success && <div className="success-banner">{success}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
+        {success && <div className="success-banner" role="status">{success}</div>}
         <form onSubmit={onSubmit}>
           <div className="mb-4">
-            <Label>Amount (₦)</Label>
-            <Input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+            <Label htmlFor="deposit-amount">Amount (₦)</Label>
+            <Input id="deposit-amount" type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
           </div>
           <Button variant="primary" type="submit" disabled={submitting}>
             {submitting ? 'Processing...' : 'Deposit'}

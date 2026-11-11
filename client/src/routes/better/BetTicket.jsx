@@ -73,7 +73,7 @@ export default function BetTicket() {
     }
   };
 
-  if (!bet) return <Page>Loading...</Page>;
+  if (!bet) return <Page role="status">Loading...</Page>;
 
   const dispute = bet.betOption.competition.disputes?.[0];
   // Matches resultService.raiseDispute: only possible while the Boardman's
@@ -106,7 +106,7 @@ export default function BetTicket() {
               The Boardman has submitted a result. If you think it's wrong, report it now — once an Admin
               reviews it, no automatic payout happens until they decide.
             </p>
-            {error && <div className="error-banner">{error}</div>}
+            {error && <div className="error-banner" role="alert">{error}</div>}
             <form onSubmit={onRaiseDispute}>
               <div className="mb-4">
                 <Label htmlFor="dispute-reason">What's wrong?</Label>
@@ -126,7 +126,7 @@ export default function BetTicket() {
           </Card>
         )}
         {dispute && (
-          <div className="success-banner mt-3">
+          <div className="success-banner mt-3" role="status">
             {DISPUTE_STATUS_MESSAGE[dispute.status] || `Dispute status: ${dispute.status}`}
           </div>
         )}
@@ -134,7 +134,7 @@ export default function BetTicket() {
         <Card className="mt-3">
           <h2>Share this ticket</h2>
           <p className="text-sm text-muted">Anyone with the link can see what was bet and how it ended — never who placed it.</p>
-          {shareError && <div className="error-banner">{shareError}</div>}
+          {shareError && <div className="error-banner" role="alert">{shareError}</div>}
           {shareUrl ? (
             <div className="mb-4">
               <Label htmlFor="share-url">Shareable link</Label>

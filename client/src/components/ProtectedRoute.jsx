@@ -8,7 +8,7 @@ export default function ProtectedRoute({ role, children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) return <div className="px-4 py-10 text-center text-muted">Loading...</div>;
+  if (loading) return <div role="status" className="px-4 py-10 text-center text-muted">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
   if (role && user.role !== role) return <Navigate to="/" replace />;
 

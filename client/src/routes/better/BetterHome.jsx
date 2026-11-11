@@ -22,11 +22,11 @@ export default function BetterHome() {
     <>
       <TopBar title="StreetBoardman" />
       <Page>
-        <h1>Welcome, {user?.fullName}</h1>
+        <h2>Welcome, {user?.fullName}</h2>
 
         <Card>
           <p className="text-sm text-muted">Wallet balance</p>
-          <h2>₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</h2>
+          <p className="text-[18px] font-bold">₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</p>
           <Button asChild variant="primary" className="mt-2">
             <Link to="/better/deposit">Deposit</Link>
           </Button>
