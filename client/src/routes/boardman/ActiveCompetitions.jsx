@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -8,6 +9,7 @@ import { Badge } from '../../components/ui/badge';
 import { Page } from '../../components/ui/page';
 
 export default function ActiveCompetitions() {
+  const { t } = useTranslation('boardman');
   const [competitions, setCompetitions] = useState([]);
 
   useEffect(() => {
@@ -16,9 +18,9 @@ export default function ActiveCompetitions() {
 
   return (
     <>
-      <TopBar title="My Competitions" />
+      <TopBar title={t('active.title')} />
       <Page>
-        {competitions.length === 0 && <p className="text-sm text-muted">You haven't created any competitions yet.</p>}
+        {competitions.length === 0 && <p className="text-sm text-muted">{t('active.none')}</p>}
         {competitions.map((c) => (
           <Card key={c.id} asChild className="text-inherit no-underline">
             <Link to={`/boardman/competitions/${c.id}`}>
@@ -26,7 +28,7 @@ export default function ActiveCompetitions() {
                 <strong>{c.title}</strong>
                 <Badge variant="open">{c.status.replace('_', ' ')}</Badge>
               </div>
-              <p className="text-sm text-muted">{c.category} · Closes {new Date(c.bettingDeadline).toLocaleString()}</p>
+              <p className="text-sm text-muted">{t('active.closes', { category: c.category, date: new Date(c.bettingDeadline).toLocaleString() })}</p>
             </Link>
           </Card>
         ))}

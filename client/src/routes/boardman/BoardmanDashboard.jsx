@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -10,6 +11,7 @@ import { Badge } from '../../components/ui/badge';
 import { Page } from '../../components/ui/page';
 
 export default function BoardmanDashboard() {
+  const { t } = useTranslation('boardman');
   const { user, boardmanProfile } = useAuth();
   const [wallet, setWallet] = useState(null);
   const [competitions, setCompetitions] = useState([]);
@@ -23,28 +25,27 @@ export default function BoardmanDashboard() {
 
   return (
     <>
-      <TopBar title="Boardman Dashboard" />
+      <TopBar title={t('dashboard.title')} />
       <Page>
-        <h2>Welcome, {user?.fullName}</h2>
+        <h2>{t('dashboard.welcome', { name: user?.fullName })}</h2>
 
         {!isApproved && (
           <div className="error-banner" role="alert">
-            Your account is {boardmanProfile?.approvalStatus}. You can't create real competitions until an Admin
-            approves you.
+            {t('dashboard.notApproved', { status: boardmanProfile?.approvalStatus })}
           </div>
         )}
 
         <Card>
-          <p className="text-sm text-muted">Commission wallet balance</p>
+          <p className="text-sm text-muted">{t('dashboard.commissionBalance')}</p>
           <p className="text-[18px] font-bold">₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</p>
         </Card>
 
         <Button asChild variant="primary">
-          <Link to="/boardman/create">+ Create Competition</Link>
+          <Link to="/boardman/create">{t('dashboard.createCompetition')}</Link>
         </Button>
 
-        <h2 className="mt-6">Your competitions</h2>
-        {competitions.length === 0 && <p className="text-sm text-muted">You haven't created any competitions yet.</p>}
+        <h2 className="mt-6">{t('dashboard.yourCompetitions')}</h2>
+        {competitions.length === 0 && <p className="text-sm text-muted">{t('dashboard.none')}</p>}
         {competitions.slice(0, 5).map((c) => (
           <Card key={c.id}>
             <div className="flex justify-between">
@@ -55,7 +56,7 @@ export default function BoardmanDashboard() {
           </Card>
         ))}
         <Button asChild variant="secondary">
-          <Link to="/boardman/active">Manage competitions</Link>
+          <Link to="/boardman/active">{t('dashboard.manage')}</Link>
         </Button>
       </Page>
       <BottomNav role="BOARDMAN" />

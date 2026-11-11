@@ -1,1 +1,81 @@
-{}
+{
+  "dashboard": {
+    "title": "Boardman Dashboard",
+    "welcome": "Welcome, {{name}}",
+    "notApproved": "Your account is {{status}}. You can't create real competitions until an Admin approves you.",
+    "commissionBalance": "Commission wallet balance",
+    "createCompetition": "+ Create Competition",
+    "yourCompetitions": "Your competitions",
+    "none": "You haven't created any competitions yet.",
+    "manage": "Manage competitions"
+  },
+  "active": {
+    "title": "My Competitions",
+    "none": "You haven't created any competitions yet.",
+    "closes": "{{category}} · Closes {{date}}"
+  },
+  "createCompetition": {
+    "title": "Create Competition",
+    "titleLabel": "Title",
+    "titlePlaceholder": "e.g. Tunde vs Seyi",
+    "categoryLabel": "Category",
+    "participantALabel": "Participant A",
+    "participantAPlaceholder": "e.g. Tunde",
+    "participantBLabel": "Participant B",
+    "participantBPlaceholder": "e.g. Seyi",
+    "deadlineLabel": "Betting deadline",
+    "notesLabel": "Notes (optional)",
+    "creating": "Creating...",
+    "submit": "Create Competition"
+  },
+  "manage": {
+    "deadline": "Betting deadline: {{date}}",
+    "resultSubmitted": "Result submitted. It will be confirmed automatically if nobody disputes it within the confirmation window.",
+    "totalStaked": "Total staked so far",
+    "betsReceivedCount": "{{count}} bet(s) received",
+    "closeBetting": "Close Betting",
+    "submitResult": "Submit Result",
+    "finalScoreLabel": "Final score (optional)",
+    "finalScorePlaceholder": "e.g. 2-1",
+    "notesLabel": "Notes (optional)",
+    "submitting": "Submitting...",
+    "submitResultBtn": "Submit Result",
+    "resultStatus": "Result status",
+    "disputedNotice": "This result is disputed. Only the Platform Admin can resolve it now — you cannot confirm your own disputed result.",
+    "betsReceived": "Bets received",
+    "noneYet": "No bets yet."
+  },
+  "revenue": {
+    "title": "Revenue & Commission",
+    "totalEarned": "Total commission earned",
+    "history": "Commission history",
+    "none": "No commission earned yet — it lands here once a competition is completed."
+  },
+  "boardmanWallet": {
+    "title": "Boardman Wallet",
+    "balance": "Balance",
+    "withdraw": "Withdraw",
+    "viewCommission": "View Commission History",
+    "recentActivity": "Recent activity"
+  },
+  "boardmanWithdraw": {
+    "title": "Withdraw Commission",
+    "amountLabel": "Amount (₦)",
+    "bankNameLabel": "Bank name",
+    "accountNumberLabel": "Account number",
+    "accountNameLabel": "Account name",
+    "pinLabel": "Your PIN",
+    "pinHint": "Re-enter your PIN to confirm. This keeps your money safe if someone else has your phone.",
+    "requesting": "Requesting...",
+    "submit": "Request Withdrawal",
+    "requested": "Withdrawal requested. It will be processed shortly."
+  },
+  "profile": {
+    "title": "Boardman Profile",
+    "fullName": "Full name",
+    "phoneNumber": "Phone number",
+    "location": "Location",
+    "approvalStatus": "Approval status",
+    "commissionRate": "Your commission rate (set by Admin)"
+  }
+}

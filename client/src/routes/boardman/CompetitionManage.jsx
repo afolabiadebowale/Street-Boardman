@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -11,6 +12,7 @@ import { Badge } from '../../components/ui/badge';
 import { Page } from '../../components/ui/page';
 
 export default function CompetitionManage() {
+  const { t } = useTranslation('boardman');
   const { id } = useParams();
   const [competition, setCompetition] = useState(null);
   const [bets, setBets] = useState([]);
@@ -46,7 +48,7 @@ export default function CompetitionManage() {
     setSubmitting(true);
     try {
       await api.post(`/competitions/${id}/result`, { winningOptionId, finalScore, notes });
-      setMessage('Result submitted. It will be confirmed automatically if nobody disputes it within the confirmation window.');
+      setMessage(t('manage.resultSubmitted'));
       load();
     } catch (err) {
       setError(err.message);
@@ -55,7 +57,7 @@ export default function CompetitionManage() {
     }
   };
 
-  if (!competition) return <Page role="status">Loading...</Page>;
+  if (!competition) return <Page role="status">{t('common:loading')}</Page>;
 
   return (
     <>
@@ -63,25 +65,25 @@ export default function CompetitionManage() {
       <Page>
         <Badge variant="open">{competition.status.replace('_', ' ')}</Badge>
         <p className="mt-2 text-sm text-muted">
-          Betting deadline: {new Date(competition.bettingDeadline).toLocaleString()}
+          {t('manage.deadline', { date: new Date(competition.bettingDeadline).toLocaleString() })}
         </p>
 
         {error && <div className="error-banner" role="alert">{error}</div>}
         {message && <div className="success-banner" role="status">{message}</div>}
 
         <Card>
-          <p className="text-sm text-muted">Total staked so far</p>
+          <p className="text-sm text-muted">{t('manage.totalStaked')}</p>
           <p className="text-[18px] font-bold">₦{totalStaked.toLocaleString()}</p>
-          <p className="text-sm text-muted">{bets.length} bet(s) received</p>
+          <p className="text-sm text-muted">{t('manage.betsReceivedCount', { count: bets.length })}</p>
         </Card>
 
         {competition.status === 'BETTING_OPEN' && (
-          <Button variant="destructive" onClick={onCloseBetting}>Close Betting</Button>
+          <Button variant="destructive" onClick={onCloseBetting}>{t('manage.closeBetting')}</Button>
         )}
 
         {competition.status === 'BETTING_CLOSED' && (
           <>
-            <h2>Submit Result</h2>
+            <h2>{t('manage.submitResult')}</h2>
             <form onSubmit={onSubmitResult}>
               {competition.betOptions.map((opt) => (
                 <Card key={opt.id} asChild className="flex items-center gap-3">
@@ -98,15 +100,15 @@ export default function CompetitionManage() {
                 </Card>
               ))}
               <div className="mb-4">
-                <Label htmlFor="final-score">Final score (optional)</Label>
-                <Input id="final-score" value={finalScore} onChange={(e) => setFinalScore(e.target.value)} placeholder="e.g. 2-1" />
+                <Label htmlFor="final-score">{t('manage.finalScoreLabel')}</Label>
+                <Input id="final-score" value={finalScore} onChange={(e) => setFinalScore(e.target.value)} placeholder={t('manage.finalScorePlaceholder')} />
               </div>
               <div className="mb-4">
-                <Label htmlFor="result-notes">Notes (optional)</Label>
+                <Label htmlFor="result-notes">{t('manage.notesLabel')}</Label>
                 <Textarea id="result-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
               </div>
               <Button variant="primary" type="submit" disabled={!winningOptionId || submitting}>
-                {submitting ? 'Submitting...' : 'Submit Result'}
+                {submitting ? t('manage.submitting') : t('manage.submitResultBtn')}
               </Button>
             </form>
           </>
@@ -114,19 +116,18 @@ export default function CompetitionManage() {
 
         {['PENDING_CONFIRMATION', 'DISPUTED', 'RESULT_CONFIRMED', 'PAYOUT_PROCESSING', 'COMPLETED'].includes(competition.status) && (
           <Card>
-            <p className="text-sm text-muted">Result status</p>
+            <p className="text-sm text-muted">{t('manage.resultStatus')}</p>
             <strong>{competition.result?.status}</strong>
             {competition.status === 'DISPUTED' && (
               <p className="mt-2">
-                This result is disputed. Only the Platform Admin can resolve it now — you cannot confirm your own
-                disputed result.
+                {t('manage.disputedNotice')}
               </p>
             )}
           </Card>
         )}
 
-        <h2 className="mt-6">Bets received</h2>
-        {bets.length === 0 && <p className="text-sm text-muted">No bets yet.</p>}
+        <h2 className="mt-6">{t('manage.betsReceived')}</h2>
+        {bets.length === 0 && <p className="text-sm text-muted">{t('manage.noneYet')}</p>}
         {bets.slice(0, 20).map((bet) => (
           <Card key={bet.id}>
             <div className="flex justify-between">
