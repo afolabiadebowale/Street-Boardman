@@ -1,30 +1,32 @@
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 
 const NAV_ITEMS = {
   BETTER: [
-    { to: '/better', label: 'Home', end: true },
-    { to: '/better/competitions', label: 'Bet' },
-    { to: '/better/my-bets', label: 'My Bets' },
-    { to: '/better/wallet', label: 'Wallet' },
-    { to: '/better/profile', label: 'Profile' },
+    { to: '/better', labelKey: 'nav.better.home', end: true },
+    { to: '/better/competitions', labelKey: 'nav.better.bet' },
+    { to: '/better/my-bets', labelKey: 'nav.better.myBets' },
+    { to: '/better/wallet', labelKey: 'nav.better.wallet' },
+    { to: '/better/profile', labelKey: 'nav.better.profile' },
   ],
   BOARDMAN: [
-    { to: '/boardman', label: 'Dashboard', end: true },
-    { to: '/boardman/create', label: 'Create' },
-    { to: '/boardman/active', label: 'Active' },
-    { to: '/boardman/wallet', label: 'Wallet' },
-    { to: '/boardman/profile', label: 'Profile' },
+    { to: '/boardman', labelKey: 'nav.boardman.dashboard', end: true },
+    { to: '/boardman/create', labelKey: 'nav.boardman.create' },
+    { to: '/boardman/active', labelKey: 'nav.boardman.active' },
+    { to: '/boardman/wallet', labelKey: 'nav.boardman.wallet' },
+    { to: '/boardman/profile', labelKey: 'nav.boardman.profile' },
   ],
   ADMIN: [
-    { to: '/admin', label: 'Overview', end: true },
-    { to: '/admin/boardmen', label: 'Boardmen' },
-    { to: '/admin/disputes', label: 'Disputes' },
-    { to: '/admin/settings', label: 'Settings' },
+    { to: '/admin', labelKey: 'nav.admin.overview', end: true },
+    { to: '/admin/boardmen', labelKey: 'nav.admin.boardmen' },
+    { to: '/admin/disputes', labelKey: 'nav.admin.disputes' },
+    { to: '/admin/settings', labelKey: 'nav.admin.settings' },
   ],
 };
 
 export default function BottomNav({ role }) {
+  const { t } = useTranslation('common');
   const items = NAV_ITEMS[role] || [];
   return (
     // FEAT-050: these breakpoints must match client/index.html's #root
@@ -40,7 +42,7 @@ export default function BottomNav({ role }) {
             cn('flex-1 px-0.5 py-1.5 text-center text-[11px] text-muted no-underline', isActive && 'font-bold text-primary')
           }
         >
-          {item.label}
+          {t(item.labelKey)}
         </NavLink>
       ))}
     </nav>

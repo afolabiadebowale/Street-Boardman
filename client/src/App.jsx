@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import Landing from './routes/auth/Landing';
@@ -46,8 +47,9 @@ const AuditLogs = fromRole(admin, 'AuditLogs');
 const Security = fromRole(admin, 'Security');
 
 export default function App() {
+  const { t } = useTranslation('common');
   return (
-    <Suspense fallback={<div role="status" className="px-4 py-10 text-center text-muted">Loading...</div>}>
+    <Suspense fallback={<div role="status" className="px-4 py-10 text-center text-muted">{t('loading')}</div>}>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />

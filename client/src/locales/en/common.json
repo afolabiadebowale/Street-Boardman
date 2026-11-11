@@ -1,0 +1,27 @@
+{
+  "logOut": "Log out",
+  "skipToContent": "Skip to content",
+  "loading": "Loading...",
+  "nav": {
+    "better": {
+      "home": "Home",
+      "bet": "Bet",
+      "myBets": "My Bets",
+      "wallet": "Wallet",
+      "profile": "Profile"
+    },
+    "boardman": {
+      "dashboard": "Dashboard",
+      "create": "Create",
+      "active": "Active",
+      "wallet": "Wallet",
+      "profile": "Profile"
+    },
+    "admin": {
+      "overview": "Overview",
+      "boardmen": "Boardmen",
+      "disputes": "Disputes",
+      "settings": "Settings"
+    }
+  }
+}

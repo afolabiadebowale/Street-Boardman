@@ -1,14 +1,16 @@
 import { Navigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 // Frontend gate is purely for UX (don't show a Boardman screen to a
 // Better) — the real permission check always happens again on the server,
 // per the security architecture in docs/ARCHITECTURE.md section 11.
 export default function ProtectedRoute({ role, children }) {
+  const { t } = useTranslation('common');
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) return <div role="status" className="px-4 py-10 text-center text-muted">Loading...</div>;
+  if (loading) return <div role="status" className="px-4 py-10 text-center text-muted">{t('loading')}</div>;
   if (!user) return <Navigate to="/login" replace />;
   if (role && user.role !== role) return <Navigate to="/" replace />;
 
