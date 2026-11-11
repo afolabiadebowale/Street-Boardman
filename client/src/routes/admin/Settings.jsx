@@ -40,7 +40,7 @@ export default function Settings() {
     }
   };
 
-  if (!settings) return <Page>Loading...</Page>;
+  if (!settings) return <Page role="status">Loading...</Page>;
 
   return (
     <>
@@ -50,20 +50,20 @@ export default function Settings() {
           These are platform-wide defaults. Changing them never rewrites commissions already calculated on
           past or in-flight competitions — each competition locks in the rates that were active when it was created.
         </p>
-        {error && <div className="error-banner">{error}</div>}
-        {message && <div className="success-banner">{message}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
+        {message && <div className="success-banner" role="status">{message}</div>}
         <form onSubmit={onSave}>
           <div className="mb-4">
-            <Label>Default Boardman commission (%)</Label>
-            <Input type="number" step="0.1" value={boardmanRate} onChange={(e) => setBoardmanRate(e.target.value)} />
+            <Label htmlFor="boardman-rate">Default Boardman commission (%)</Label>
+            <Input id="boardman-rate" type="number" step="0.1" value={boardmanRate} onChange={(e) => setBoardmanRate(e.target.value)} />
           </div>
           <div className="mb-4">
-            <Label>Platform commission (%)</Label>
-            <Input type="number" step="0.1" value={platformRate} onChange={(e) => setPlatformRate(e.target.value)} />
+            <Label htmlFor="platform-rate">Platform commission (%)</Label>
+            <Input id="platform-rate" type="number" step="0.1" value={platformRate} onChange={(e) => setPlatformRate(e.target.value)} />
           </div>
           <div className="mb-4">
-            <Label>Result confirmation window (hours)</Label>
-            <Input type="number" step="0.5" value={windowHours} onChange={(e) => setWindowHours(e.target.value)} />
+            <Label htmlFor="confirmation-window">Result confirmation window (hours)</Label>
+            <Input id="confirmation-window" type="number" step="0.5" value={windowHours} onChange={(e) => setWindowHours(e.target.value)} />
           </div>
           <Button variant="primary" type="submit">Save Settings</Button>
         </form>

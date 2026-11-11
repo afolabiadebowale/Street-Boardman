@@ -23,7 +23,7 @@ export default function BoardmanWallet() {
       <Page>
         <Card>
           <p className="text-sm text-muted">Balance</p>
-          <h1>₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</h1>
+          <p className="text-[22px] font-bold">₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</p>
         </Card>
         <Button asChild variant="primary">
           <Link to="/boardman/withdraw">Withdraw</Link>

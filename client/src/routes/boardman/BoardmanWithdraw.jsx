@@ -43,24 +43,24 @@ export default function BoardmanWithdraw() {
     <>
       <TopBar title="Withdraw Commission" />
       <Page>
-        {error && <div className="error-banner">{error}</div>}
-        {success && <div className="success-banner">{success}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
+        {success && <div className="success-banner" role="status">{success}</div>}
         <form onSubmit={onSubmit}>
           <div className="mb-4">
-            <Label>Amount (₦)</Label>
-            <Input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+            <Label htmlFor="withdraw-amount">Amount (₦)</Label>
+            <Input id="withdraw-amount" type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
           </div>
           <div className="mb-4">
-            <Label>Bank name</Label>
-            <Input value={bankName} onChange={(e) => setBankName(e.target.value)} required />
+            <Label htmlFor="withdraw-bank-name">Bank name</Label>
+            <Input id="withdraw-bank-name" value={bankName} onChange={(e) => setBankName(e.target.value)} required />
           </div>
           <div className="mb-4">
-            <Label>Account number</Label>
-            <Input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} required />
+            <Label htmlFor="withdraw-account-number">Account number</Label>
+            <Input id="withdraw-account-number" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} required />
           </div>
           <div className="mb-4">
-            <Label>Account name</Label>
-            <Input value={accountName} onChange={(e) => setAccountName(e.target.value)} required />
+            <Label htmlFor="withdraw-account-name">Account name</Label>
+            <Input id="withdraw-account-name" value={accountName} onChange={(e) => setAccountName(e.target.value)} required />
           </div>
           <div className="mb-4">
             <Label htmlFor="withdraw-pin">Your PIN</Label>

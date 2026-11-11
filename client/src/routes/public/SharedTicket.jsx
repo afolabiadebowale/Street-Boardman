@@ -20,13 +20,13 @@ export default function SharedTicket() {
     return (
       <div className="page">
         <h1>StreetBoardman</h1>
-        <div className="error-banner">{error}</div>
+        <div className="error-banner" role="alert">{error}</div>
         <Link to="/" className="btn btn-primary" style={{ marginTop: 12 }}>Go to StreetBoardman</Link>
       </div>
     );
   }
 
-  if (!ticket) return <div className="page">Loading...</div>;
+  if (!ticket) return <div className="page" role="status">Loading...</div>;
 
   return (
     <div className="page">

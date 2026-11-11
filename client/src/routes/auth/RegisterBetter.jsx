@@ -34,19 +34,19 @@ export default function RegisterBetter() {
   return (
     <Page>
       <h1>Register as a Better</h1>
-      {error && <div className="error-banner">{error}</div>}
+      {error && <div className="error-banner" role="alert">{error}</div>}
       <form onSubmit={onSubmit}>
         <div className="mb-4">
-          <Label>Full name</Label>
-          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+          <Label htmlFor="reg-better-name">Full name</Label>
+          <Input id="reg-better-name" value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" required />
         </div>
         <div className="mb-4">
-          <Label>Phone number</Label>
-          <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" required />
+          <Label htmlFor="reg-better-phone">Phone number</Label>
+          <Input id="reg-better-phone" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" required />
         </div>
         <div className="mb-4">
-          <Label>Choose a PIN (4+ digits)</Label>
-          <Input value={pin} onChange={(e) => setPin(e.target.value)} type="password" required />
+          <Label htmlFor="reg-better-pin">Choose a PIN (4+ digits)</Label>
+          <Input id="reg-better-pin" value={pin} onChange={(e) => setPin(e.target.value)} type="password" autoComplete="new-password" required />
         </div>
         <Button variant="primary" disabled={submitting} type="submit">
           {submitting ? 'Creating account...' : 'Register'}

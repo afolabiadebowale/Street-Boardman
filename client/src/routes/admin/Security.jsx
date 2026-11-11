@@ -60,7 +60,7 @@ function ChangePassword({ required, onChanged }) {
       <form onSubmit={submit}>
         <p className="text-sm text-muted">Password</p>
         {required && <p><strong>Your password is too short for a staff account. Choose one of at least 12 characters.</strong></p>}
-        {error && <div className="error-banner">{error}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
         <div className="mb-4">
           <Label htmlFor="current-password">Current password</Label>
           <Input id="current-password" type="password" autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
@@ -145,7 +145,7 @@ export default function Security() {
       <TopBar title="Account Security" />
       <Page>
         {gated && (
-          <div className="error-banner">
+          <div className="error-banner" role="alert">
             Admin tools are locked until you{' '}
             {[gate.mfaRequired && 'turn on two-factor authentication', gate.passwordChangeRequired && 'change your password']
               .filter(Boolean)
@@ -153,12 +153,12 @@ export default function Security() {
             .
           </div>
         )}
-        {error && <div className="error-banner">{error}</div>}
-        {notice && <div className="success-banner">{notice}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
+        {notice && <div className="success-banner" role="status">{notice}</div>}
 
         <Card>
           <p className="text-sm text-muted">Two-factor authentication</p>
-          <h2>{user?.mfaEnabled ? 'On' : 'Off'}</h2>
+          <p className="text-[18px] font-bold">{user?.mfaEnabled ? 'On' : 'Off'}</p>
           {!user?.mfaEnabled && (
             <p className="text-sm text-muted">
               Staff accounts can move money and change other users. Turn this on so a stolen PIN alone

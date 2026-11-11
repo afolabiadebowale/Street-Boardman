@@ -20,7 +20,7 @@ function StaffSecurityBanner({ gate }) {
     ? new Date(gate.enforcedFrom).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
   return (
-    <div className="error-banner">
+    <div className="error-banner" role="alert">
       Please {needs.join(' and ')}.{deadline && ` Admin tools will be locked from ${deadline} until you do.`}{' '}
       <Link to="/admin/security">Account security</Link>
     </div>
@@ -35,7 +35,7 @@ export default function AdminOverview() {
     api.get('/admin/overview').then(setOverview);
   }, []);
 
-  if (!overview) return <Page>Loading...</Page>;
+  if (!overview) return <Page role="status">Loading...</Page>;
 
   return (
     <>
@@ -44,7 +44,7 @@ export default function AdminOverview() {
         <StaffSecurityBanner gate={user?.staffSecurity} />
         <Card>
           <p className="text-sm text-muted">Platform revenue (commission wallet)</p>
-          <h1>₦{Number(overview.platformRevenue).toLocaleString()}</h1>
+          <p className="text-[22px] font-bold">₦{Number(overview.platformRevenue).toLocaleString()}</p>
         </Card>
         <Card><span className="text-sm text-muted">Registered Betters</span><strong className="float-right">{overview.userCount}</strong></Card>
         <Card><span className="text-sm text-muted">Boardmen</span><strong className="float-right">{overview.boardmanCount}</strong></Card>

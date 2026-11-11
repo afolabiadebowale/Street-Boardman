@@ -25,10 +25,10 @@ export default function BoardmanDashboard() {
     <>
       <TopBar title="Boardman Dashboard" />
       <Page>
-        <h1>Welcome, {user?.fullName}</h1>
+        <h2>Welcome, {user?.fullName}</h2>
 
         {!isApproved && (
-          <div className="error-banner">
+          <div className="error-banner" role="alert">
             Your account is {boardmanProfile?.approvalStatus}. You can't create real competitions until an Admin
             approves you.
           </div>
@@ -36,7 +36,7 @@ export default function BoardmanDashboard() {
 
         <Card>
           <p className="text-sm text-muted">Commission wallet balance</p>
-          <h2>₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</h2>
+          <p className="text-[18px] font-bold">₦{wallet ? Number(wallet.balance).toLocaleString() : '...'}</p>
         </Card>
 
         <Button asChild variant="primary">

@@ -41,24 +41,25 @@ export default function RegisterBoardman() {
         New Boardman accounts start as PENDING_APPROVAL. An Admin reviews and approves you before you can run
         real competitions.
       </p>
-      {error && <div className="error-banner">{error}</div>}
-      {message && <div className="success-banner">{message}</div>}
+      {error && <div className="error-banner" role="alert">{error}</div>}
+      {message && <div className="success-banner" role="status">{message}</div>}
       <form onSubmit={onSubmit}>
         <div className="mb-4">
-          <Label>Full name</Label>
-          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+          <Label htmlFor="reg-boardman-name">Full name</Label>
+          <Input id="reg-boardman-name" value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" required />
         </div>
         <div className="mb-4">
-          <Label>Phone number</Label>
-          <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" required />
+          <Label htmlFor="reg-boardman-phone">Phone number</Label>
+          <Input id="reg-boardman-phone" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" required />
         </div>
         <div className="mb-4">
-          <Label>Choose a PIN (4+ digits)</Label>
-          <Input value={pin} onChange={(e) => setPin(e.target.value)} type="password" required />
+          <Label htmlFor="reg-boardman-pin">Choose a PIN (4+ digits)</Label>
+          <Input id="reg-boardman-pin" value={pin} onChange={(e) => setPin(e.target.value)} type="password" autoComplete="new-password" required />
         </div>
         <div className="mb-4">
-          <Label>Location</Label>
+          <Label htmlFor="reg-boardman-location">Location</Label>
           <Input
+            id="reg-boardman-location"
             value={businessLocation}
             onChange={(e) => setBusinessLocation(e.target.value)}
             placeholder="e.g. Yaba, Lagos"

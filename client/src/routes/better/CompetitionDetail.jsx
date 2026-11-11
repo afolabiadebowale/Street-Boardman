@@ -46,7 +46,7 @@ export default function CompetitionDetail() {
     }
   };
 
-  if (!competition) return <Page>Loading...</Page>;
+  if (!competition) return <Page role="status">Loading...</Page>;
 
   const selectedOption = competition.betOptions.find((o) => o.id === selectedOptionId);
   const selectedOdds = competition.pool.options.find((o) => o.id === selectedOptionId);
@@ -60,7 +60,7 @@ export default function CompetitionDetail() {
         <TopBar title={competition.title} />
         <Page>
           <h2>Confirm your bet</h2>
-          {error && <div className="error-banner">{error}</div>}
+          {error && <div className="error-banner" role="alert">{error}</div>}
           <Card>
             <p className="mb-1.5 flex justify-between text-[15px]"><span>Competition</span><span>{competition.title}</span></p>
             <p className="mb-1.5 flex justify-between text-[15px]"><span>Your pick</span><span>{selectedOption?.label}</span></p>
@@ -100,7 +100,7 @@ export default function CompetitionDetail() {
         ))}
 
         <h2>Choose your bet</h2>
-        {error && <div className="error-banner">{error}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
         <form onSubmit={onReview}>
           {competition.betOptions.map((opt) => {
             const odds = competition.pool.options.find((o) => o.id === opt.id);
@@ -122,8 +122,9 @@ export default function CompetitionDetail() {
           })}
 
           <div className="mb-4 mt-4">
-            <Label>Stake (₦)</Label>
+            <Label htmlFor="bet-stake">Stake (₦)</Label>
             <Input
+              id="bet-stake"
               type="number"
               min="100"
               value={stake}

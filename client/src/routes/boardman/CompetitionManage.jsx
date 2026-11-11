@@ -55,7 +55,7 @@ export default function CompetitionManage() {
     }
   };
 
-  if (!competition) return <Page>Loading...</Page>;
+  if (!competition) return <Page role="status">Loading...</Page>;
 
   return (
     <>
@@ -66,12 +66,12 @@ export default function CompetitionManage() {
           Betting deadline: {new Date(competition.bettingDeadline).toLocaleString()}
         </p>
 
-        {error && <div className="error-banner">{error}</div>}
-        {message && <div className="success-banner">{message}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
+        {message && <div className="success-banner" role="status">{message}</div>}
 
         <Card>
           <p className="text-sm text-muted">Total staked so far</p>
-          <h2>₦{totalStaked.toLocaleString()}</h2>
+          <p className="text-[18px] font-bold">₦{totalStaked.toLocaleString()}</p>
           <p className="text-sm text-muted">{bets.length} bet(s) received</p>
         </Card>
 
@@ -98,12 +98,12 @@ export default function CompetitionManage() {
                 </Card>
               ))}
               <div className="mb-4">
-                <Label>Final score (optional)</Label>
-                <Input value={finalScore} onChange={(e) => setFinalScore(e.target.value)} placeholder="e.g. 2-1" />
+                <Label htmlFor="final-score">Final score (optional)</Label>
+                <Input id="final-score" value={finalScore} onChange={(e) => setFinalScore(e.target.value)} placeholder="e.g. 2-1" />
               </div>
               <div className="mb-4">
-                <Label>Notes (optional)</Label>
-                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+                <Label htmlFor="result-notes">Notes (optional)</Label>
+                <Textarea id="result-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
               </div>
               <Button variant="primary" type="submit" disabled={!winningOptionId || submitting}>
                 {submitting ? 'Submitting...' : 'Submit Result'}

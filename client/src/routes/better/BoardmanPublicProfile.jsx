@@ -23,14 +23,14 @@ export default function BoardmanPublicProfile() {
       <>
         <TopBar title="Boardman" />
         <Page>
-          <div className="error-banner">{error}</div>
+          <div className="error-banner" role="alert">{error}</div>
         </Page>
         <BottomNav role="BETTER" />
       </>
     );
   }
 
-  if (!boardman) return <Page>Loading...</Page>;
+  if (!boardman) return <Page role="status">Loading...</Page>;
 
   const { track } = boardman;
 
