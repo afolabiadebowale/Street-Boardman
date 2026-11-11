@@ -1,1 +1,97 @@
-{}
+{
+  "overview": {
+    "title": "Platform Overview",
+    "securityBanner": {
+      "mfaAction": "turn on two-factor authentication",
+      "passwordAction": "change to a password of at least 12 characters",
+      "prefix": "Please {{actions}}.",
+      "lockedSuffix": " Admin tools will be locked from {{date}} until you do.",
+      "accountSecurity": "Account security"
+    },
+    "platformRevenue": "Platform revenue (commission wallet)",
+    "registeredBetters": "Registered Betters",
+    "boardmen": "Boardmen",
+    "competitions": "Competitions",
+    "totalBets": "Total bets placed",
+    "manage": "Manage",
+    "users": "Users",
+    "allCompetitions": "All Competitions",
+    "financialLedger": "Financial Ledger",
+    "auditLogs": "Audit Logs",
+    "accountSecurity": "Account Security"
+  },
+  "boardmen": {
+    "title": "Boardmen",
+    "approve": "Approve",
+    "reject": "Reject",
+    "suspend": "Suspend"
+  },
+  "competitions": {
+    "title": "All Competitions",
+    "boardman": "Boardman: {{name}} ({{phone}})",
+    "closes": "{{category}} · Closes {{date}}"
+  },
+  "disputes": {
+    "title": "Disputes",
+    "none": "No disputes.",
+    "raisedBy": "Raised by {{name}} ({{phone}})",
+    "confirmPayout": "Confirm Result & Pay Out",
+    "cancelRefund": "Cancel & Refund"
+  },
+  "settings": {
+    "title": "System Settings",
+    "description": "These are platform-wide defaults. Changing them never rewrites commissions already calculated on past or in-flight competitions — each competition locks in the rates that were active when it was created.",
+    "updated": "Settings updated. This only affects competitions created from now on.",
+    "boardmanRateLabel": "Default Boardman commission (%)",
+    "platformRateLabel": "Platform commission (%)",
+    "confirmationWindowLabel": "Result confirmation window (hours)",
+    "save": "Save Settings"
+  },
+  "users": {
+    "title": "Users",
+    "suspend": "Suspend",
+    "reactivate": "Reactivate"
+  },
+  "ledger": {
+    "title": "Financial Ledger",
+    "platform": "Platform"
+  },
+  "auditLogs": {
+    "title": "Audit Logs"
+  },
+  "security": {
+    "title": "Account Security",
+    "lockedPrefix": "Admin tools are locked until you ",
+    "mfaAction": "turn on two-factor authentication",
+    "passwordAction": "change your password",
+    "twoFactor": "Two-factor authentication",
+    "on": "On",
+    "off": "Off",
+    "mfaDescription": "Staff accounts can move money and change other users. Turn this on so a stolen PIN alone is not enough to log in.",
+    "preparing": "Preparing...",
+    "setupButton": "Set up two-factor authentication",
+    "scanStep": "In an authenticator app (Google Authenticator, Microsoft Authenticator, Authy), scan this code:",
+    "qrAlt": "QR code for your authenticator app",
+    "cantScan": "Can't scan? On this phone, ",
+    "openInApp": "open it in your authenticator app",
+    "orEnterKey": ", or enter this key manually:",
+    "enterCodeLabel": "Enter the 6-digit code the app shows",
+    "checking": "Checking...",
+    "turnOn": "Turn on",
+    "disableHint": "To turn it off, enter a current code from your authenticator app.",
+    "authCodeLabel": "Authentication code",
+    "turnOff": "Turn off",
+    "mfaEnabledNotice": "Two-factor authentication is on. You will be asked for a code every time you log in.",
+    "mfaDisabledNotice": "Two-factor authentication is off.",
+    "passwordChangedNotice": "Password changed. You have been signed out everywhere else.",
+    "passwordTooShort": "Your password is too short for a staff account. Choose one of at least 12 characters.",
+    "passwordLabel": "Password",
+    "currentPasswordLabel": "Current password",
+    "newPasswordLabel": "New password (at least 12 characters)",
+    "confirmPasswordLabel": "New password again",
+    "signOutWarning": "Changing your password signs you out on every other device.",
+    "saving": "Saving...",
+    "changePassword": "Change password",
+    "passwordMismatch": "The new passwords do not match"
+  }
+}

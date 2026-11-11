@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -7,6 +8,7 @@ import { Badge } from '../../components/ui/badge';
 import { Page } from '../../components/ui/page';
 
 export default function AdminCompetitions() {
+  const { t } = useTranslation('admin');
   const [competitions, setCompetitions] = useState([]);
 
   useEffect(() => {
@@ -15,7 +17,7 @@ export default function AdminCompetitions() {
 
   return (
     <>
-      <TopBar title="All Competitions" />
+      <TopBar title={t('competitions.title')} />
       <Page>
         {competitions.map((c) => (
           <Card key={c.id}>
@@ -23,8 +25,8 @@ export default function AdminCompetitions() {
               <strong>{c.title}</strong>
               <Badge variant="open">{c.status.replace('_', ' ')}</Badge>
             </div>
-            <p className="text-sm text-muted">Boardman: {c.boardmanProfile.user.fullName} ({c.boardmanProfile.user.phone})</p>
-            <p className="text-sm text-muted">{c.category} · Closes {new Date(c.bettingDeadline).toLocaleString()}</p>
+            <p className="text-sm text-muted">{t('competitions.boardman', { name: c.boardmanProfile.user.fullName, phone: c.boardmanProfile.user.phone })}</p>
+            <p className="text-sm text-muted">{t('competitions.closes', { category: c.category, date: new Date(c.bettingDeadline).toLocaleString() })}</p>
           </Card>
         ))}
       </Page>

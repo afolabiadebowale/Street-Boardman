@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -8,6 +9,7 @@ import { Badge } from '../../components/ui/badge';
 import { Page } from '../../components/ui/page';
 
 export default function Boardmen() {
+  const { t } = useTranslation('admin');
   const [boardmen, setBoardmen] = useState([]);
   const [error, setError] = useState('');
 
@@ -26,7 +28,7 @@ export default function Boardmen() {
 
   return (
     <>
-      <TopBar title="Boardmen" />
+      <TopBar title={t('boardmen.title')} />
       <Page>
         {error && <div className="error-banner" role="alert">{error}</div>}
         {boardmen.map((b) => (
@@ -40,12 +42,12 @@ export default function Boardmen() {
             <p className="text-sm text-muted">{b.user.phone} · {b.businessLocation}</p>
             {b.approvalStatus === 'PENDING_APPROVAL' && (
               <div className="mt-2 flex gap-2">
-                <Button variant="primary" className="mb-0 flex-1" onClick={() => act(b.id, 'approve')}>Approve</Button>
-                <Button variant="destructive" className="mb-0 flex-1" onClick={() => act(b.id, 'reject')}>Reject</Button>
+                <Button variant="primary" className="mb-0 flex-1" onClick={() => act(b.id, 'approve')}>{t('boardmen.approve')}</Button>
+                <Button variant="destructive" className="mb-0 flex-1" onClick={() => act(b.id, 'reject')}>{t('boardmen.reject')}</Button>
               </div>
             )}
             {b.approvalStatus === 'APPROVED' && (
-              <Button variant="destructive" className="mt-2" onClick={() => act(b.id, 'suspend')}>Suspend</Button>
+              <Button variant="destructive" className="mt-2" onClick={() => act(b.id, 'suspend')}>{t('boardmen.suspend')}</Button>
             )}
           </Card>
         ))}

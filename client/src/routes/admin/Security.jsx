@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import TopBar from '../../components/TopBar';
@@ -27,6 +28,7 @@ function CodeInput({ value, onChange, id }) {
 // Staff passwords must be 12+ characters (TASK-036). Changing it signs out
 // every other device; this one gets fresh cookies and stays signed in.
 function ChangePassword({ required, onChanged }) {
+  const { t } = useTranslation('admin');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -37,7 +39,7 @@ function ChangePassword({ required, onChanged }) {
     e.preventDefault();
     setError('');
     if (newPassword !== confirm) {
-      setError('The new passwords do not match');
+      setError(t('security.passwordMismatch'));
       return;
     }
     setBusy(true);
@@ -58,24 +60,24 @@ function ChangePassword({ required, onChanged }) {
   return (
     <Card asChild>
       <form onSubmit={submit}>
-        <p className="text-sm text-muted">Password</p>
-        {required && <p><strong>Your password is too short for a staff account. Choose one of at least 12 characters.</strong></p>}
+        <p className="text-sm text-muted">{t('security.passwordLabel')}</p>
+        {required && <p><strong>{t('security.passwordTooShort')}</strong></p>}
         {error && <div className="error-banner" role="alert">{error}</div>}
         <div className="mb-4">
-          <Label htmlFor="current-password">Current password</Label>
+          <Label htmlFor="current-password">{t('security.currentPasswordLabel')}</Label>
           <Input id="current-password" type="password" autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
         </div>
         <div className="mb-4">
-          <Label htmlFor="new-password">New password (at least 12 characters)</Label>
+          <Label htmlFor="new-password">{t('security.newPasswordLabel')}</Label>
           <Input id="new-password" type="password" autoComplete="new-password" minLength={12} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
         </div>
         <div className="mb-4">
-          <Label htmlFor="confirm-password">New password again</Label>
+          <Label htmlFor="confirm-password">{t('security.confirmPasswordLabel')}</Label>
           <Input id="confirm-password" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
         </div>
-        <p className="text-sm text-muted">Changing your password signs you out on every other device.</p>
+        <p className="text-sm text-muted">{t('security.signOutWarning')}</p>
         <Button variant="primary" type="submit" disabled={busy}>
-          {busy ? 'Saving...' : 'Change password'}
+          {busy ? t('security.saving') : t('security.changePassword')}
         </Button>
       </form>
     </Card>
@@ -86,6 +88,7 @@ function ChangePassword({ required, onChanged }) {
 // code from the authenticator app proves the key was actually saved —
 // the server enforces that too, this just walks the admin through it.
 export default function Security() {
+  const { t } = useTranslation('admin');
   const { user, refresh } = useAuth();
   const gate = user?.staffSecurity;
   const gated = gate && gate.enforced && (gate.mfaRequired || gate.passwordChangeRequired);
@@ -126,7 +129,7 @@ export default function Security() {
       setSetup(null);
       setCode('');
       await refresh();
-      setNotice('Two-factor authentication is on. You will be asked for a code every time you log in.');
+      setNotice(t('security.mfaEnabledNotice'));
     });
   };
 
@@ -136,18 +139,18 @@ export default function Security() {
       await api.post('/auth/mfa/disable', { code });
       setCode('');
       await refresh();
-      setNotice('Two-factor authentication is off.');
+      setNotice(t('security.mfaDisabledNotice'));
     });
   };
 
   return (
     <>
-      <TopBar title="Account Security" />
+      <TopBar title={t('security.title')} />
       <Page>
         {gated && (
           <div className="error-banner" role="alert">
-            Admin tools are locked until you{' '}
-            {[gate.mfaRequired && 'turn on two-factor authentication', gate.passwordChangeRequired && 'change your password']
+            {t('security.lockedPrefix')}
+            {[gate.mfaRequired && t('security.mfaAction'), gate.passwordChangeRequired && t('security.passwordAction')]
               .filter(Boolean)
               .join(' and ')}
             .
@@ -157,41 +160,38 @@ export default function Security() {
         {notice && <div className="success-banner" role="status">{notice}</div>}
 
         <Card>
-          <p className="text-sm text-muted">Two-factor authentication</p>
-          <p className="text-[18px] font-bold">{user?.mfaEnabled ? 'On' : 'Off'}</p>
+          <p className="text-sm text-muted">{t('security.twoFactor')}</p>
+          <p className="text-[18px] font-bold">{user?.mfaEnabled ? t('security.on') : t('security.off')}</p>
           {!user?.mfaEnabled && (
             <p className="text-sm text-muted">
-              Staff accounts can move money and change other users. Turn this on so a stolen PIN alone
-              is not enough to log in.
+              {t('security.mfaDescription')}
             </p>
           )}
         </Card>
 
         {!user?.mfaEnabled && !setup && (
           <Button type="button" variant="primary" onClick={startSetup} disabled={busy}>
-            {busy ? 'Preparing...' : 'Set up two-factor authentication'}
+            {busy ? t('security.preparing') : t('security.setupButton')}
           </Button>
         )}
 
         {setup && (
           <Card>
             <p>
-              <strong>1.</strong> In an authenticator app (Google Authenticator, Microsoft Authenticator, Authy),
-              scan this code:
+              <strong>1.</strong> {t('security.scanStep')}
             </p>
-            <img src={setup.qrDataUrl} alt="QR code for your authenticator app" width={220} height={220} />
+            <img src={setup.qrDataUrl} alt={t('security.qrAlt')} width={220} height={220} />
             <p className="text-sm text-muted">
-              Can&apos;t scan? On this phone, <a href={setup.otpauthUrl}>open it in your authenticator app</a>, or
-              enter this key manually:
+              {t('security.cantScan')}<a href={setup.otpauthUrl}>{t('security.openInApp')}</a>{t('security.orEnterKey')}
             </p>
             <p><code className="break-all">{setup.secret}</code></p>
             <form onSubmit={confirmSetup}>
               <div className="mb-4">
-                <Label htmlFor="mfa-setup-code"><strong>2.</strong> Enter the 6-digit code the app shows</Label>
+                <Label htmlFor="mfa-setup-code"><strong>2.</strong> {t('security.enterCodeLabel')}</Label>
                 <CodeInput id="mfa-setup-code" value={code} onChange={setCode} />
               </div>
               <Button variant="primary" type="submit" disabled={busy || code.length !== 6}>
-                {busy ? 'Checking...' : 'Turn on'}
+                {busy ? t('security.checking') : t('security.turnOn')}
               </Button>
             </form>
           </Card>
@@ -200,13 +200,13 @@ export default function Security() {
         {user?.mfaEnabled && (
           <Card asChild>
             <form onSubmit={disable}>
-              <p className="text-sm text-muted">To turn it off, enter a current code from your authenticator app.</p>
+              <p className="text-sm text-muted">{t('security.disableHint')}</p>
               <div className="mb-4">
-                <Label htmlFor="mfa-disable-code">Authentication code</Label>
+                <Label htmlFor="mfa-disable-code">{t('security.authCodeLabel')}</Label>
                 <CodeInput id="mfa-disable-code" value={code} onChange={setCode} />
               </div>
               <Button variant="destructive" type="submit" disabled={busy || code.length !== 6}>
-                Turn off
+                {t('security.turnOff')}
               </Button>
             </form>
           </Card>
@@ -216,7 +216,7 @@ export default function Security() {
           required={Boolean(gate?.passwordChangeRequired)}
           onChanged={async () => {
             await refresh();
-            setNotice('Password changed. You have been signed out everywhere else.');
+            setNotice(t('security.passwordChangedNotice'));
           }}
         />
       </Page>
