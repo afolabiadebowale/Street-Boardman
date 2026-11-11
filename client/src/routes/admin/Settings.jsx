@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -8,6 +9,7 @@ import { Label } from '../../components/ui/label';
 import { Page } from '../../components/ui/page';
 
 export default function Settings() {
+  const { t } = useTranslation('admin');
   const [settings, setSettings] = useState(null);
   const [boardmanRate, setBoardmanRate] = useState('');
   const [platformRate, setPlatformRate] = useState('');
@@ -34,7 +36,7 @@ export default function Settings() {
         platformCommissionRate: Number(platformRate) / 100,
         resultConfirmationWindowHours: Number(windowHours),
       });
-      setMessage('Settings updated. This only affects competitions created from now on.');
+      setMessage(t('settings.updated'));
     } catch (err) {
       setError(err.message);
     }
@@ -44,28 +46,27 @@ export default function Settings() {
 
   return (
     <>
-      <TopBar title="System Settings" />
+      <TopBar title={t('settings.title')} />
       <Page>
         <p className="text-sm text-muted">
-          These are platform-wide defaults. Changing them never rewrites commissions already calculated on
-          past or in-flight competitions — each competition locks in the rates that were active when it was created.
+          {t('settings.description')}
         </p>
         {error && <div className="error-banner" role="alert">{error}</div>}
         {message && <div className="success-banner" role="status">{message}</div>}
         <form onSubmit={onSave}>
           <div className="mb-4">
-            <Label htmlFor="boardman-rate">Default Boardman commission (%)</Label>
+            <Label htmlFor="boardman-rate">{t('settings.boardmanRateLabel')}</Label>
             <Input id="boardman-rate" type="number" step="0.1" value={boardmanRate} onChange={(e) => setBoardmanRate(e.target.value)} />
           </div>
           <div className="mb-4">
-            <Label htmlFor="platform-rate">Platform commission (%)</Label>
+            <Label htmlFor="platform-rate">{t('settings.platformRateLabel')}</Label>
             <Input id="platform-rate" type="number" step="0.1" value={platformRate} onChange={(e) => setPlatformRate(e.target.value)} />
           </div>
           <div className="mb-4">
-            <Label htmlFor="confirmation-window">Result confirmation window (hours)</Label>
+            <Label htmlFor="confirmation-window">{t('settings.confirmationWindowLabel')}</Label>
             <Input id="confirmation-window" type="number" step="0.5" value={windowHours} onChange={(e) => setWindowHours(e.target.value)} />
           </div>
-          <Button variant="primary" type="submit">Save Settings</Button>
+          <Button variant="primary" type="submit">{t('settings.save')}</Button>
         </form>
       </Page>
       <BottomNav role="ADMIN" />

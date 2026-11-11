@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -8,6 +9,7 @@ import { Badge } from '../../components/ui/badge';
 import { Page } from '../../components/ui/page';
 
 export default function Users() {
+  const { t } = useTranslation('admin');
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
 
@@ -26,7 +28,7 @@ export default function Users() {
 
   return (
     <>
-      <TopBar title="Users" />
+      <TopBar title={t('users.title')} />
       <Page>
         {error && <div className="error-banner" role="alert">{error}</div>}
         {users.map((u) => (
@@ -38,9 +40,9 @@ export default function Users() {
             <p className="text-sm text-muted">{u.phone} · {u.role}</p>
             {u.role !== 'ADMIN' && (
               u.status === 'ACTIVE' ? (
-                <Button variant="destructive" className="mt-2" onClick={() => act(u.id, 'suspend')}>Suspend</Button>
+                <Button variant="destructive" className="mt-2" onClick={() => act(u.id, 'suspend')}>{t('users.suspend')}</Button>
               ) : (
-                <Button variant="primary" className="mt-2" onClick={() => act(u.id, 'reactivate')}>Reactivate</Button>
+                <Button variant="primary" className="mt-2" onClick={() => act(u.id, 'reactivate')}>{t('users.reactivate')}</Button>
               )
             )}
           </Card>
