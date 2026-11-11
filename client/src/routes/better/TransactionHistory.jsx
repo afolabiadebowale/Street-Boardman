@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import TopBar from '../../components/TopBar';
 import BottomNav from '../../components/BottomNav';
@@ -18,6 +19,7 @@ const currentMonth = new Date().toISOString().slice(0, 7);
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 export default function TransactionHistory() {
+  const { t } = useTranslation('better');
   const [transactions, setTransactions] = useState([]);
   const [month, setMonth] = useState(currentMonth);
   const safeMonth = MONTH_PATTERN.test(month) ? month : currentMonth;
@@ -28,12 +30,12 @@ export default function TransactionHistory() {
 
   return (
     <>
-      <TopBar title="Transaction History" />
+      <TopBar title={t('transactionHistory.title')} />
       <Page>
         <Card>
-          <h2>Download a statement</h2>
+          <h2>{t('transactionHistory.downloadStatement')}</h2>
           <div className="mb-4">
-            <Label htmlFor="statement-month">Month</Label>
+            <Label htmlFor="statement-month">{t('transactionHistory.monthLabel')}</Label>
             <Input
               id="statement-month"
               type="month"
@@ -47,22 +49,22 @@ export default function TransactionHistory() {
               href={`/api/wallet/me/statement?month=${encodeURIComponent(safeMonth)}`}
               download={`streetboardman-statement-${safeMonth}.csv`}
             >
-              Download CSV
+              {t('transactionHistory.downloadCsv')}
             </a>
           </Button>
         </Card>
 
-        {transactions.length === 0 && <p className="text-sm text-muted">No transactions yet.</p>}
-        {transactions.map((t) => (
-          <Card key={t.id}>
+        {transactions.length === 0 && <p className="text-sm text-muted">{t('transactionHistory.none')}</p>}
+        {transactions.map((txn) => (
+          <Card key={txn.id}>
             <div className="flex justify-between">
-              <span>{t.type.replace('_', ' ')}</span>
-              <strong className={cn(Number(t.amount) >= 0 ? 'text-primary' : 'text-danger')}>
-                {Number(t.amount) >= 0 ? '+' : ''}₦{Number(t.amount).toLocaleString()}
+              <span>{txn.type.replace('_', ' ')}</span>
+              <strong className={cn(Number(txn.amount) >= 0 ? 'text-primary' : 'text-danger')}>
+                {Number(txn.amount) >= 0 ? '+' : ''}₦{Number(txn.amount).toLocaleString()}
               </strong>
             </div>
-            <p className="text-sm text-muted">Balance after: ₦{Number(t.balanceAfter).toLocaleString()}</p>
-            <p className="text-sm text-muted">{new Date(t.createdAt).toLocaleString()}</p>
+            <p className="text-sm text-muted">{t('transactionHistory.balanceAfter', { amount: Number(txn.balanceAfter).toLocaleString() })}</p>
+            <p className="text-sm text-muted">{new Date(txn.createdAt).toLocaleString()}</p>
           </Card>
         ))}
       </Page>
