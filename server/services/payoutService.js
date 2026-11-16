@@ -3,6 +3,8 @@ const notificationService = require('./notificationService');
 const AppError = require('../utils/appError');
 const walletService = require('./walletService');
 const commissionService = require('./commissionService');
+const settingsService = require('./settingsService');
+const { SETTING_KEYS } = require('../config/constants');
 const { toDecimal } = require('../utils/money');
 
 // Claims the competition for payout (RESULT_CONFIRMED -> PAYOUT_PROCESSING)
@@ -165,8 +167,8 @@ async function processPayoutsForCompetition(competitionId) {
   const winningBets = winningOption.bets;
   const otherBets = allBets.filter((b) => b.betOptionId !== winningOption.id);
 
-  // Two no-contest cases (TASK-007), both handled the same way — full
-  // refund of every stake, no commission taken:
+  // Three no-contest cases, all handled the same way — full refund of
+  // every stake, no commission taken:
   //  1. Nobody bet on the winning option at all: there's no one to pay,
   //     and taking commission while every other bettor's stake simply
   //     vanishes would be indefensible.
@@ -174,9 +176,18 @@ async function processPayoutsForCompetition(competitionId) {
   //     there was never any real risk for commission to have been earned
   //     against, and a pari-mutuel split would pay winners LESS than they
   //     staked purely because commission was deducted from their own money.
+  //     (TASK-007)
+  //  3. Too few distinct people bet (the "waiting room" rule): below
+  //     minimumBetters, even a technically two-sided pool isn't a real
+  //     competition — most commonly one person betting against
+  //     themselves across both options, which case 2 above doesn't
+  //     catch since both options do have money.
   const noWinningBets = winningBets.length === 0;
   const oneSidedPool = !noWinningBets && otherBets.length === 0;
-  if (noWinningBets || oneSidedPool) {
+  const distinctBetters = new Set(allBets.map((b) => b.betterId)).size;
+  const minimumBetters = await settingsService.getSetting(SETTING_KEYS.MINIMUM_BETTERS);
+  const tooFewBetters = distinctBetters < minimumBetters;
+  if (noWinningBets || oneSidedPool || tooFewBetters) {
     return cancelAndRefundCompetition(competitionId);
   }
 

@@ -45,6 +45,8 @@
     "boardmanRateLabel": "Default Boardman commission (%)",
     "platformRateLabel": "Platform commission (%)",
     "confirmationWindowLabel": "Result confirmation window (hours)",
+    "minimumBettersLabel": "Minimum betters to run a competition",
+    "minimumBettersHint": "Below this many distinct people, every stake is refunded in full with no commission taken — it never runs as a real competition.",
     "save": "Save Settings"
   },
   "users": {

@@ -8,6 +8,8 @@ const resultService = require('../../server/services/resultService');
 const payoutService = require('../../server/services/payoutService');
 const reconciliationService = require('../../server/services/reconciliationService');
 const ledgerService = require('../../server/services/ledgerService');
+const settingsService = require('../../server/services/settingsService');
+const { SETTING_KEYS } = require('../../server/config/constants');
 const { toDecimal } = require('../../server/utils/money');
 
 // End-to-end money properties through the real services and Postgres
@@ -178,7 +180,13 @@ describe('money conservation through the real payout engine — properties (TASK
         expect((await ledgerService.getAccountBalance(prisma, escrow.id)).equals(0)).toBe(true);
 
         const winningStakes = placed.filter((b) => b.option === s.winner);
-        const refunded = s.outcome === 'cancel' || winningStakes.length === 0 || winningStakes.length === placed.length;
+        const distinctBetters = new Set(placed.map((b) => b.bettor)).size;
+        const minimumBetters = await settingsService.getSetting(SETTING_KEYS.MINIMUM_BETTERS);
+        const refunded =
+          s.outcome === 'cancel' ||
+          winningStakes.length === 0 ||
+          winningStakes.length === placed.length ||
+          distinctBetters < minimumBetters;
         const commission = await prisma.commission.findUnique({ where: { competitionId: competition.id } });
 
         if (refunded) {

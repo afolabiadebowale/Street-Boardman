@@ -74,16 +74,30 @@ describe('Bet codes under concurrency', () => {
     expect((await prisma.wallet.findUnique({ where: { id: wallet.id } })).balance.toString()).toBe('1000');
   });
 
-  it('estimates the payout as if the bet were already counted, and updates the option total', async () => {
-    // Empty match, 5% + 3% commission: a lone ₦1,000 bet would get ₦920 back.
+  it('estimates the payout as if the bet were already counted, honestly for a one-sided pool, and updates the option total', async () => {
+    // Empty match, nobody else has staked anything: this is a one-sided
+    // pool (only one option has money), so poolService.poolView says
+    // "you'd just get your stake back" rather than a number that looks
+    // like a guaranteed loss.
     const first = await bettingService.placeBet({ betterId: bettorIds[0], betOptionId, stake: 1000 });
-    expect(first.potentialPayout.toString()).toBe('920');
+    expect(first.potentialPayout.toString()).toBe('1000');
     expect(first.betOption.totalStaked.toString()).toBe('1000');
 
-    // Second ₦1,000 on the same side: pool 2,000 -> 1,840 shared 50/50.
+    // Second ₦1,000 on the same side: still one-sided (same option, no
+    // opposing money yet), so still just their own stake back.
     const second = await bettingService.placeBet({ betterId: bettorIds[1], betOptionId, stake: 1000 });
-    expect(second.potentialPayout.toString()).toBe('920');
+    expect(second.potentialPayout.toString()).toBe('1000');
     expect(second.betOption.totalStaked.toString()).toBe('2000');
+
+    // A ₦1,000 bet on the OTHER option makes this a real two-sided pool:
+    // 5% + 3% commission on the ₦3,000 pool leaves ₦2,760 distributable.
+    // This bettor is, so far, the only one backing their side, so
+    // as-if-counted they'd take the whole distributable pool if it wins.
+    const otherOptionId = (
+      await prisma.betOption.findFirst({ where: { competitionId: first.competitionId, id: { not: betOptionId } } })
+    ).id;
+    const third = await bettingService.placeBet({ betterId: bettorIds[2], betOptionId: otherOptionId, stake: 1000 });
+    expect(third.potentialPayout.toString()).toBe('2760');
   });
 
   it('keeps the option total exact under concurrent bets, across shards', async () => {
