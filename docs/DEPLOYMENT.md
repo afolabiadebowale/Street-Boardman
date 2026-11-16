@@ -131,3 +131,5 @@ Every log line is JSON with a `requestId` (or `job` and `tickId` for the worker)
 ```
 fields @timestamp, level, msg, @message | filter requestId = "<id from the error>" | sort @timestamp
 ```
+
+When one of these alarms actually fires, [`runbooks/ON_CALL.md`](runbooks/ON_CALL.md) has the severity, incident flow, and per-alarm notes this table doesn't cover.
