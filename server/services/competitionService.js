@@ -155,6 +155,31 @@ async function getCompetitionById(id) {
   return withOptionTotals(competition);
 }
 
+// The moment betting closes, the pool is final — no more bets can land
+// (placeBet itself re-checks status). This is the one point we can tell
+// every Better the real number instead of the guess they were given when
+// they placed their bet: writes each OPEN bet's potentialPayout to
+// poolView's final, one-sided-aware math (the same math placeBet's own
+// estimate already shares). May still end up moot if the competition is
+// refunded at settlement (too few betters, no winning side, etc.) — same
+// as a one-sided pool's locked number today never actually getting paid.
+async function lockFinalPayouts(competitionId) {
+  const competition = await prisma.competition.findUnique({
+    where: { id: competitionId },
+    include: { betOptions: true },
+  });
+  if (!competition) return;
+  await withOptionTotals(competition);
+  const { options } = poolView(competition);
+  for (const option of options) {
+    if (option.payoutPer100 == null) continue; // nobody staked this option
+    await prisma.$executeRaw`
+      UPDATE "Bet"
+      SET "potentialPayout" = ROUND("stake" * ${option.payoutPer100}::numeric / 100, 2)
+      WHERE "betOptionId" = ${option.id} AND "status" = 'OPEN'`;
+  }
+}
+
 async function closeBetting(boardmanProfileId, competitionId) {
   const competition = await getCompetitionById(competitionId);
   if (competition.boardmanProfileId !== boardmanProfileId) {
@@ -163,20 +188,36 @@ async function closeBetting(boardmanProfileId, competitionId) {
   if (competition.status !== 'BETTING_OPEN') {
     throw new AppError('Betting is not open on this competition', 400);
   }
-  return prisma.competition.update({
+  const updated = await prisma.competition.update({
     where: { id: competitionId },
     data: { status: 'BETTING_CLOSED' },
   });
+  await lockFinalPayouts(competitionId);
+  return updated;
 }
 
 // Called by a scheduled sweep (see server/jobs) so betting also closes
 // automatically once the deadline passes, even if the Boardman forgets.
+// Conditional per-competition update (not one bulk UPDATE) so each one
+// that's actually closed by this call gets its payouts locked — and so
+// this never double-processes one a manual close-betting call raced
+// ahead of.
 async function autoCloseExpiredCompetitions() {
-  const result = await prisma.competition.updateMany({
+  const due = await prisma.competition.findMany({
     where: { status: 'BETTING_OPEN', bettingDeadline: { lte: new Date() } },
-    data: { status: 'BETTING_CLOSED' },
+    select: { id: true },
   });
-  return result.count;
+  let count = 0;
+  for (const { id } of due) {
+    const claim = await prisma.competition.updateMany({
+      where: { id, status: 'BETTING_OPEN' },
+      data: { status: 'BETTING_CLOSED' },
+    });
+    if (claim.count === 0) continue; // already closed by something else
+    await lockFinalPayouts(id);
+    count += 1;
+  }
+  return count;
 }
 
 // Boardman edits while betting is open (FEAT-039). The description and

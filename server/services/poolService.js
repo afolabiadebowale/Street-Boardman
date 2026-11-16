@@ -33,17 +33,17 @@ function poolView(competition, betCounts = {}) {
 
   const notices = [];
   if (total.isZero()) {
-    notices.push({ code: 'EMPTY_POOL', message: 'No bets yet. Returns appear once people start betting.' });
+    notices.push({ code: 'EMPTY_POOL', message: 'The pot is empty — be the first to stake. Payouts appear once people start betting.' });
   } else if (oneSided) {
     notices.push({
       code: 'ONE_SIDED',
-      message: 'Every stake so far is on one option. If it stays that way, everyone is refunded and no commission is taken.',
+      message: 'Every stake in the pot so far is on one option. If it stays that way, everyone is refunded and no commission is taken.',
     });
   }
   if (!total.isZero() && backed.length < options.length) {
     notices.push({
       code: 'UNBACKED_OPTION',
-      message: 'If an option nobody has backed wins, every stake is refunded and no commission is taken.',
+      message: 'If an option nobody has backed wins, every stake in the pot is refunded and no commission is taken.',
     });
   }
 

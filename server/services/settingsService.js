@@ -7,6 +7,7 @@ const DEFAULTS = {
   [SETTING_KEYS.BOARDMAN_COMMISSION_RATE]: env.defaults.boardmanCommissionRate,
   [SETTING_KEYS.PLATFORM_COMMISSION_RATE]: env.defaults.platformCommissionRate,
   [SETTING_KEYS.RESULT_CONFIRMATION_WINDOW_HOURS]: env.defaults.resultConfirmationWindowHours,
+  [SETTING_KEYS.MINIMUM_BETTERS]: env.defaults.minimumBetters,
 };
 
 async function getSetting(key) {

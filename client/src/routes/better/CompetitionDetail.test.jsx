@@ -27,11 +27,12 @@ function renderDetail(id = 'comp-1') {
   );
 }
 
-function makeCompetition({ pool, boardman = null, ...overrides } = {}) {
+function makeCompetition({ pool, boardman = null, status = 'BETTING_OPEN', ...overrides } = {}) {
   return {
     id: 'comp-1',
     title: 'Alpha vs Bravo',
     category: 'FOOTBALL',
+    status,
     bettingDeadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
     betOptions: [{ id: 'opt-1', label: 'Alpha' }, { id: 'opt-2', label: 'Bravo' }],
     boardman,
@@ -45,17 +46,18 @@ beforeEach(() => {
 });
 
 describe('CompetitionDetail', () => {
-  it('shows the pool size (FEAT-036)', async () => {
+  it('shows the pot size (FEAT-036, reworded for pot honesty)', async () => {
     api.get.mockResolvedValueOnce({ competition: makeCompetition({ pool: { totalPool: '15000.00' } }) });
     renderDetail();
 
     expect(await screen.findByText('Alpha vs Bravo')).toBeInTheDocument();
-    expect(screen.getByText(/Pool so far: ₦15,000/)).toBeInTheDocument();
+    expect(screen.getByText(/₦15,000 in the pot so far/)).toBeInTheDocument();
   });
 
-  it('shows per-option payout odds next to each choice (FEAT-036)', async () => {
+  it('hides per-option payout odds while betting is open — no confident number, just the pot notice', async () => {
     api.get.mockResolvedValueOnce({
       competition: makeCompetition({
+        status: 'BETTING_OPEN',
         pool: {
           totalPool: '10000.00',
           options: [
@@ -68,8 +70,30 @@ describe('CompetitionDetail', () => {
     renderDetail();
 
     await screen.findByText('Alpha vs Bravo');
-    expect(screen.getByText('₦100 → ₦180.00')).toBeInTheDocument();
-    expect(screen.getByText('₦100 → ₦140.00')).toBeInTheDocument();
+    expect(screen.queryByText(/₦100 →/)).not.toBeInTheDocument();
+    expect(screen.getByText(/check back once betting closes/)).toBeInTheDocument();
+  });
+
+  it('shows the locked per-option payout once betting has closed', async () => {
+    api.get.mockResolvedValueOnce({
+      competition: makeCompetition({
+        status: 'BETTING_CLOSED',
+        pool: {
+          totalPool: '10000.00',
+          options: [
+            { id: 'opt-1', payoutPer100: '180.00' },
+            { id: 'opt-2', payoutPer100: '140.00' },
+          ],
+        },
+      }),
+    });
+    renderDetail();
+
+    await screen.findByText('Alpha vs Bravo');
+    expect(screen.getByText('Locked: ₦100 → ₦180.00')).toBeInTheDocument();
+    expect(screen.getByText('Locked: ₦100 → ₦140.00')).toBeInTheDocument();
+    // The pot notice ("check back once betting closes") no longer applies.
+    expect(screen.queryByText(/check back once betting closes/)).not.toBeInTheDocument();
   });
 
   it("shows the Boardman's name and trust score (FEAT-048)", async () => {
@@ -96,12 +120,12 @@ describe('CompetitionDetail', () => {
   it('surfaces a pool edge-case notice as a banner (FEAT-038)', async () => {
     api.get.mockResolvedValueOnce({
       competition: makeCompetition({
-        pool: { totalPool: '0.00', notices: [{ code: 'EMPTY_POOL', message: 'No bets yet. Returns appear once people start betting.' }] },
+        pool: { totalPool: '0.00', notices: [{ code: 'EMPTY_POOL', message: 'The pot is empty — be the first to stake. Payouts appear once people start betting.' }] },
       }),
     });
     renderDetail();
 
-    expect(await screen.findByText('No bets yet. Returns appear once people start betting.')).toBeInTheDocument();
+    expect(await screen.findByText('The pot is empty — be the first to stake. Payouts appear once people start betting.')).toBeInTheDocument();
   });
 
   it('shows no notice banner when the pool has none', async () => {
@@ -119,18 +143,18 @@ describe('CompetitionDetail', () => {
     renderDetail();
 
     await screen.findByText('Alpha vs Bravo');
-    // The "Alpha" radio's accessible name also includes its odds text
-    // ("Alpha ₦100 → ₦180.00"), so select by position instead of name. The
-    // stake field's <label> isn't programmatically associated with its
+    // The stake field's <label> isn't programmatically associated with its
     // <input> (pre-existing — a11y labeling is tracked separately under
-    // EPIC-011), so select it by placeholder instead.
+    // EPIC-011), so select it by placeholder instead. Select the radio by
+    // position since both options render identically while betting is open.
     fireEvent.click(screen.getAllByRole('radio')[0]);
     fireEvent.change(screen.getByPlaceholderText('e.g. 5000'), { target: { value: '2000' } });
     fireEvent.click(screen.getByRole('button', { name: 'Review Bet' }));
 
     expect(await screen.findByText('Confirm your bet')).toBeInTheDocument();
     expect(screen.getByText('₦2,000')).toBeInTheDocument();
-    expect(screen.getByText('₦3,600')).toBeInTheDocument(); // 180.00 per 100 * 2000/100
+    // No payout figure is shown pre-confirmation — just the pot notice.
+    expect(screen.getByText(/check back once betting closes/)).toBeInTheDocument();
     // The bet isn't placed just by reviewing it.
     expect(api.post).not.toHaveBeenCalled();
   });

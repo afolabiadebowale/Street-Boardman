@@ -4,6 +4,7 @@ const AppError = require('../utils/appError');
 const walletService = require('./walletService');
 const responsibleGambling = require('./responsibleGamblingService');
 const { addStake, totalsFor, withOptionTotals } = require('./optionTotals');
+const { poolView } = require('./poolService');
 const { generateBetCode } = require('../utils/idGenerator');
 const { toDecimal, round2 } = require('../utils/money');
 const { recordAuditLog } = require('../middleware/auditLog');
@@ -87,20 +88,22 @@ async function placeBet({ betterId, betOptionId, stake, idempotencyKey, hasGambl
     throw new AppError('Betting deadline has passed', 400);
   }
 
-  // Rough live estimate only: (this bet's share of its option) times the
-  // whole pool, minus commission, as if this bet were already counted.
-  // The real payout is only known once betting closes — the UI labels
-  // this as an estimate. Read without locks, before the transaction, so
-  // the transaction stays as short as possible (TASK-048).
+  // Rough live estimate only, as if this bet were already counted — the
+  // real payout is only known once betting closes (the UI labels this
+  // as an estimate, and the close-betting step in competitionService
+  // recomputes the real one). Shares poolService.poolView's math
+  // exactly, including its one-sided-pool handling, so a first/only
+  // bettor is shown "you'd get your stake back" instead of a number
+  // that looks like a guaranteed loss. Read without locks, before the
+  // transaction, so the transaction stays as short as possible (TASK-048).
   const options = await prisma.betOption.findMany({ where: { competitionId: competition.id } });
   await withOptionTotals({ betOptions: options });
-  const poolAfter = options.reduce((sum, o) => sum.plus(toDecimal(o.totalStaked)), stakeDecimal);
-  const optionAfter = toDecimal(options.find((o) => o.id === betOptionId).totalStaked).plus(stakeDecimal);
-  const estimatedPayout = round2(
-    poolAfter
-      .times(1 - competition.boardmanCommissionRate - competition.platformCommissionRate)
-      .times(stakeDecimal.dividedBy(optionAfter))
+  const projectedOptions = options.map((o) =>
+    o.id === betOptionId ? { ...o, totalStaked: toDecimal(o.totalStaked).plus(stakeDecimal) } : o
   );
+  const projectedPool = poolView({ ...competition, betOptions: projectedOptions });
+  const payoutPer100 = toDecimal(projectedPool.options.find((o) => o.id === betOptionId).payoutPer100);
+  const estimatedPayout = round2(payoutPer100.times(stakeDecimal).dividedBy(100));
 
   const stakeLimits = await responsibleGambling.loadLimits({ id: betterId, hasGamblingLimits }, 'STAKE');
   try {
