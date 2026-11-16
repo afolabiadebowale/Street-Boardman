@@ -14,6 +14,7 @@ export default function Settings() {
   const [boardmanRate, setBoardmanRate] = useState('');
   const [platformRate, setPlatformRate] = useState('');
   const [windowHours, setWindowHours] = useState('');
+  const [minimumBetters, setMinimumBetters] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -23,6 +24,7 @@ export default function Settings() {
       setBoardmanRate(String(d.settings.boardmanCommissionRate * 100));
       setPlatformRate(String(d.settings.platformCommissionRate * 100));
       setWindowHours(String(d.settings.resultConfirmationWindowHours));
+      setMinimumBetters(String(d.settings.minimumBetters));
     });
   }, []);
 
@@ -35,6 +37,7 @@ export default function Settings() {
         boardmanCommissionRate: Number(boardmanRate) / 100,
         platformCommissionRate: Number(platformRate) / 100,
         resultConfirmationWindowHours: Number(windowHours),
+        minimumBetters: Number(minimumBetters),
       });
       setMessage(t('settings.updated'));
     } catch (err) {
@@ -65,6 +68,11 @@ export default function Settings() {
           <div className="mb-4">
             <Label htmlFor="confirmation-window">{t('settings.confirmationWindowLabel')}</Label>
             <Input id="confirmation-window" type="number" step="0.5" value={windowHours} onChange={(e) => setWindowHours(e.target.value)} />
+          </div>
+          <div className="mb-4">
+            <Label htmlFor="minimum-betters">{t('settings.minimumBettersLabel')}</Label>
+            <Input id="minimum-betters" type="number" step="1" min="1" value={minimumBetters} onChange={(e) => setMinimumBetters(e.target.value)} />
+            <p className="text-sm text-muted">{t('settings.minimumBettersHint')}</p>
           </div>
           <Button variant="primary" type="submit">{t('settings.save')}</Button>
         </form>

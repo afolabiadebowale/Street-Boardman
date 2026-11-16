@@ -51,10 +51,7 @@ export default function CompetitionDetail() {
   if (!competition) return <Page role="status">{t('common:loading')}</Page>;
 
   const selectedOption = competition.betOptions.find((o) => o.id === selectedOptionId);
-  const selectedOdds = competition.pool.options.find((o) => o.id === selectedOptionId);
-  const estimatedPayout = selectedOdds?.payoutPer100 && stake
-    ? ((Number(selectedOdds.payoutPer100) * Number(stake)) / 100).toFixed(2)
-    : null;
+  const bettingOpen = competition.status === 'BETTING_OPEN';
 
   if (reviewing) {
     return (
@@ -67,11 +64,8 @@ export default function CompetitionDetail() {
             <p className="mb-1.5 flex justify-between text-[15px]"><span>{t('competitionDetail.competition')}</span><span>{competition.title}</span></p>
             <p className="mb-1.5 flex justify-between text-[15px]"><span>{t('competitionDetail.yourPick')}</span><span>{selectedOption?.label}</span></p>
             <p className="mb-1.5 flex justify-between text-[15px]"><span>{t('competitionDetail.stake')}</span><span>₦{Number(stake).toLocaleString()}</span></p>
-            {estimatedPayout && (
-              <p className="mb-1.5 flex justify-between text-[15px]"><span>{t('competitionDetail.estimatedPayout')}</span><span>₦{Number(estimatedPayout).toLocaleString()}</span></p>
-            )}
           </Card>
-          <p className="text-sm text-muted">{t('competitionDetail.estimateNotice')}</p>
+          <p className="text-sm text-muted">{t('competitionDetail.potNotice')}</p>
           <Button variant="primary" type="button" onClick={onConfirm} disabled={submitting} className="mt-4">
             {submitting ? t('competitionDetail.placingBet') : t('competitionDetail.confirmBet')}
           </Button>
@@ -97,6 +91,7 @@ export default function CompetitionDetail() {
           </p>
         )}
         <p className="text-sm text-muted">{t('competitionDetail.poolSoFar', { pool: Number(competition.pool.totalPool).toLocaleString() })}</p>
+        {bettingOpen && <p className="text-sm text-muted">{t('competitionDetail.potNotice')}</p>}
         {competition.pool.notices.map((n) => (
           <div key={n.code} className="mb-4 rounded-[10px] bg-[#fff4e0] p-3 text-sm text-[#8a5b00]">{n.message}</div>
         ))}
@@ -117,7 +112,11 @@ export default function CompetitionDetail() {
                     onChange={() => setSelectedOptionId(opt.id)}
                   />
                   <span className="flex-1">{opt.label}</span>
-                  {odds?.payoutPer100 && <span className="text-sm text-muted">{t('competitionDetail.payoutPer100', { payout: odds.payoutPer100 })}</span>}
+                  {/* While betting is open, no confident number is shown — just
+                      the pot notice above. Once closed, the rate is final. */}
+                  {!bettingOpen && odds?.payoutPer100 && (
+                    <span className="text-sm text-muted">{t('competitionDetail.lockedPayoutPer100', { payout: odds.payoutPer100 })}</span>
+                  )}
                 </label>
               </Card>
             );

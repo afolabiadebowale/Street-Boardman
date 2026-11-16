@@ -33,12 +33,12 @@ beforeEach(() => {
 });
 
 describe('Competitions', () => {
-  it('shows the pool size for each competition (FEAT-036)', async () => {
+  it('shows the pot size for each competition (FEAT-036, reworded for pot honesty)', async () => {
     api.get.mockResolvedValueOnce({ competitions: [makeCompetition({ pool: { totalPool: '15000.00' } })] });
     render(<MemoryRouter><Competitions /></MemoryRouter>);
 
     expect(await screen.findByText('Alpha vs Bravo')).toBeInTheDocument();
-    expect(screen.getByText(/Pool ₦15,000/)).toBeInTheDocument();
+    expect(screen.getByText(/₦15,000 in the pot/)).toBeInTheDocument();
   });
 
   it("shows the Boardman's name and trust score when available (FEAT-048)", async () => {

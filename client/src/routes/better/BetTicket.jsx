@@ -73,6 +73,10 @@ export default function BetTicket() {
   // sweep respects (see docs/ARCHITECTURE.md section 10), and only while no
   // dispute already exists on this competition.
   const canDispute = bet.betOption.competition.status === 'PENDING_CONFIRMATION' && !dispute;
+  // Betting still open: potentialPayout is just a guess from when this bet
+  // was placed. Once it's closed, competitionService.lockFinalPayouts has
+  // already overwritten it with the real, final number.
+  const bettingOpen = bet.betOption.competition.status === 'BETTING_OPEN';
 
   return (
     <>
@@ -83,11 +87,14 @@ export default function BetTicket() {
           <div className="mb-1.5 flex justify-between text-[15px]"><span>{t('betTicket.competition')}</span><strong>{bet.betOption.competition.title}</strong></div>
           <div className="mb-1.5 flex justify-between text-[15px]"><span>{t('betTicket.selection')}</span><strong>{bet.betOption.label}</strong></div>
           <div className="mb-1.5 flex justify-between text-[15px]"><span>{t('betTicket.stake')}</span><strong>₦{Number(bet.stake).toLocaleString()}</strong></div>
-          <div className="mb-1.5 flex justify-between text-[15px]"><span>{t('betTicket.estimatedPayout')}</span><strong>₦{Number(bet.potentialPayout).toLocaleString()}</strong></div>
+          <div className="mb-1.5 flex justify-between text-[15px]">
+            <span>{t('betTicket.payoutLabel')}</span>
+            <strong>{bettingOpen ? t('betTicket.payoutPending') : t('betTicket.payoutLocked', { amount: Number(bet.potentialPayout).toLocaleString() })}</strong>
+          </div>
           <div data-testid="ticket-status-row" className="mb-1.5 flex justify-between text-[15px]"><span>{t('betTicket.status')}</span><strong>{bet.status}</strong></div>
         </div>
         <p className="mt-3 text-sm text-muted">
-          {t('betTicket.payoutNotice')}
+          {bettingOpen ? t('betTicket.payoutNoticeOpen') : t('betTicket.payoutNoticeLocked')}
         </p>
 
         {canDispute && (

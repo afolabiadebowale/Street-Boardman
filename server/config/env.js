@@ -150,5 +150,9 @@ module.exports = {
     boardmanCommissionRate: Number(process.env.DEFAULT_BOARDMAN_COMMISSION_RATE || 0.05),
     platformCommissionRate: Number(process.env.DEFAULT_PLATFORM_COMMISSION_RATE || 0.03),
     resultConfirmationWindowHours: Number(process.env.DEFAULT_RESULT_CONFIRMATION_WINDOW_HOURS || 2),
+    // Below this many distinct betters, a competition is cancelled and
+    // refunded when betting closes instead of running (FEAT-pot-honesty) —
+    // mirrors the "if just one better, no competition" rule.
+    minimumBetters: Number(process.env.DEFAULT_MINIMUM_BETTERS || 2),
   },
 };

@@ -8,6 +8,7 @@ module.exports = {
     BOARDMAN_COMMISSION_RATE: 'boardmanCommissionRate',
     PLATFORM_COMMISSION_RATE: 'platformCommissionRate',
     RESULT_CONFIRMATION_WINDOW_HOURS: 'resultConfirmationWindowHours',
+    MINIMUM_BETTERS: 'minimumBetters',
   },
   // Current versions of the documents users must accept (FEAT-060).
   // Bumping one makes every user's consent "required" again.
